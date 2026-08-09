@@ -861,15 +861,18 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
 }
 
 .filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   flex: 0 0 auto;
-  min-height: 38px;
-  padding: 0 15px;
+  min-height: 46px;
+  padding: 0 10px 0 18px;
   border: 0;
   border-radius: 999px;
   background: transparent;
   color: var(--muted-strong);
-  font-size: 12px;
-  font-weight: 680;
+  font-size: 14px;
+  font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
   transition:
@@ -885,7 +888,8 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
 .filter-chip.is-active {
   background: var(--text);
   color: var(--bg);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, .12);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .16);
+  transform: scale(1.02);
 }
 
 .filter-chip:active {
@@ -896,10 +900,49 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
   color: #a36727;
 }
 
+.filter-chip-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--line-strong);
+  color: var(--muted-strong);
+  font-size: 11px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.filter-chip.is-active .filter-chip-count {
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  color: var(--text);
+}
+
+/* The chips' own direct payoff line — picking a tag should feel like it
+   visibly did something substantial, not just quietly reshuffle a grid
+   below the fold. Sized closer to a small heading than a caption. */
 .filter-hint {
-  margin: 14px 2px clamp(30px, 4vw, 46px);
-  color: var(--muted);
-  font-size: 12px;
+  margin: 18px 2px clamp(32px, 4vw, 48px);
+  color: var(--text);
+  font-size: clamp(16px, 2vw, 20px);
+  font-weight: 560;
+  letter-spacing: -.01em;
+  line-height: 1.4;
+}
+
+.filter-hint strong {
+  font-weight: 780;
+}
+
+.filter-hint-tag {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--text) 30%, transparent);
+  text-underline-offset: 4px;
+  text-decoration-thickness: 2px;
 }
 
 .gallery-grid {

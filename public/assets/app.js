@@ -17,6 +17,7 @@
   const galleryGrid = $('.gallery-grid');
   const filterRow = $('.filter-row');
   const filterRowWrap = $('.filter-row-wrap');
+  const filterHint = $('.filter-hint');
   const galleryCount = $('.gallery-count');
   const galleryEmpty = $('.gallery-empty');
   const showMoreWrap = $('.show-more-wrap');
@@ -167,11 +168,16 @@
     window.addEventListener('scroll', updateHeader, { passive: true });
   }
 
-  function allTags() {
+  function tagCounts() {
     const counts = new Map();
     for (const photo of photos) {
       for (const tag of photo.tags) counts.set(tag, (counts.get(tag) || 0) + 1);
     }
+    return counts;
+  }
+
+  function allTags() {
+    const counts = tagCounts();
     // Most-photographed subjects first; alphabetical as a tiebreaker for stability.
     return [...counts.keys()].sort((a, b) => counts.get(b) - counts.get(a) || a.localeCompare(b));
   }
@@ -187,25 +193,40 @@
     filterRowWrap.classList.toggle('is-scrollable-end', canScrollRight);
   }
 
+  function appendChipCount(button, count) {
+    const badge = document.createElement('span');
+    badge.className = 'filter-chip-count';
+    badge.textContent = String(count);
+    button.appendChild(badge);
+  }
+
   function renderFilters() {
     if (!filterRow) return;
+    const counts = tagCounts();
     const tags = allTags();
+
+    const allButton = $('.filter-chip[data-filter="all"]', filterRow);
+    if (allButton) appendChipCount(allButton, photos.length);
+
     tags.forEach(tag => {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'filter-chip';
       button.dataset.filter = tag;
       button.setAttribute('aria-pressed', 'false');
-      button.textContent = tag;
+      button.append(document.createTextNode(tag));
+      appendChipCount(button, counts.get(tag) || 0);
       filterRow.appendChild(button);
     });
-    if (photos.some(photo => photo.tags.length === 0)) {
+    const untaggedCount = photos.filter(photo => photo.tags.length === 0).length;
+    if (untaggedCount > 0) {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'filter-chip filter-chip-warning';
       button.dataset.filter = '__untagged__';
       button.setAttribute('aria-pressed', 'false');
-      button.textContent = 'Untagged';
+      button.append(document.createTextNode('Untagged'));
+      appendChipCount(button, untaggedCount);
       filterRow.appendChild(button);
     }
 
@@ -223,7 +244,10 @@
       visibleCount = BATCH_SIZE;
       syncFilterButtons();
       renderGallery();
+      updateFilterStatus();
     });
+
+    updateFilterStatus();
   }
 
   function syncFilterButtons() {
@@ -233,6 +257,34 @@
       chip.classList.toggle('is-active', active);
       chip.setAttribute('aria-pressed', String(active));
     });
+  }
+
+  // The filter chips need their own direct, prominent payoff line, not just
+  // the small muted count already sitting up by the section heading —
+  // otherwise picking a tag has no visible weight of its own and reads as
+  // if it barely does anything.
+  function updateFilterStatus() {
+    if (!filterHint) return;
+    filterHint.replaceChildren();
+    const matchCount = document.createElement('strong');
+    if (activeTag === null) {
+      matchCount.textContent = String(photos.length);
+      filterHint.append(matchCount, document.createTextNode(' photographs across '));
+      const tagCount = document.createElement('strong');
+      tagCount.textContent = String(allTags().length);
+      filterHint.append(tagCount, document.createTextNode(' categories — tap a tag to explore.'));
+      return;
+    }
+    const label = activeTag === '__untagged__' ? 'Untagged' : activeTag;
+    matchCount.textContent = String(filteredPhotos.length);
+    filterHint.append(matchCount, document.createTextNode(' of '));
+    const total = document.createElement('strong');
+    total.textContent = String(photos.length);
+    filterHint.append(total, document.createTextNode(' photographs — '));
+    const tagLabel = document.createElement('strong');
+    tagLabel.className = 'filter-hint-tag';
+    tagLabel.textContent = label;
+    filterHint.append(tagLabel, document.createTextNode('.'));
   }
 
   function matchesActiveTags(photo) {

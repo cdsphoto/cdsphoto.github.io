@@ -57,7 +57,7 @@ const galleryJson = JSON.stringify(galleryData).replace(/</g, '\\u003c');
   <a class="skip-link" href="#gallery">Skip to gallery</a>
 
   <header class="site-header" id="top">
-    <a class="brand" href="#top" aria-label={`${site.title} home`}>
+    <a class="brand" href="#featured" aria-label={`${site.title} home`}>
       <span class="brand-mark" aria-hidden="true"></span><span>{site.brand}</span>
     </a>
     <nav class="main-nav" aria-label="Primary navigation"><a href="#gallery">Gallery</a><a href="#about">About</a></nav>
@@ -116,7 +116,9 @@ const galleryJson = JSON.stringify(galleryData).replace(/</g, '\\u003c');
     </section>
   </main>
 
-  <footer class="site-footer"><a class="brand footer-brand" href="#top"><span class="brand-mark" aria-hidden="true"></span><span>{site.brand}</span></a><p>© <span class="current-year"></span> {site.title}. All photographs reserved.</p><a class="back-to-top" href="#top">Back to top <span aria-hidden="true">↑</span></a></footer>
+  <footer class="site-footer"><a class="brand footer-brand" href="#featured"><span class="brand-mark" aria-hidden="true"></span><span>{site.brand}</span></a><p>© <span class="current-year"></span> {site.title}. All photographs reserved.</p><a class="back-to-top" href="#featured">Back to top <span aria-hidden="true">↑</span></a></footer>
+
+  <div class="toast" role="status" aria-live="polite"></div>
 
   <div class="install-prompt" hidden role="dialog" aria-label="Install this app">
     <img class="install-icon" src={`${base}assets/icon-192.png`} alt="" width="46" height="46" />
@@ -145,7 +147,7 @@ const galleryJson = JSON.stringify(galleryData).replace(/</g, '\\u003c');
   <dialog class="lightbox" aria-label="Photograph viewer">
     <div class="lightbox-backdrop" data-lightbox-close></div>
     <div class="lightbox-shell">
-      <header class="lightbox-header"><div class="lightbox-counter" aria-live="polite"></div><button class="icon-button lightbox-close" type="button" aria-label="Close photograph viewer" data-lightbox-close><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></header>
+      <header class="lightbox-header"><div class="lightbox-counter" aria-live="polite"></div><div class="lightbox-header-actions"><button class="icon-button lightbox-share" type="button" aria-label="Share this photograph"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 10.5 15.4 6.8M8.6 13.5l6.8 3.7"></path></svg></button><button class="icon-button lightbox-close" type="button" aria-label="Close photograph viewer" data-lightbox-close><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></div></header>
       <div class="lightbox-media"><button class="lightbox-nav lightbox-prev" type="button" aria-label="Previous photograph"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18 9 12l6-6"></path></svg></button><img class="lightbox-image" src="" alt="" /><button class="lightbox-nav lightbox-next" type="button" aria-label="Next photograph"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button></div>
       <footer class="lightbox-caption"><div class="lightbox-caption-main"><p class="lightbox-title"></p><p class="lightbox-description"></p><p class="lightbox-detail"></p><p class="lightbox-technical"></p></div><div class="lightbox-tags"></div></footer>
     </div>

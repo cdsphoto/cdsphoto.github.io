@@ -1,5 +1,5 @@
 /* CDS Photography service worker — app shell + offline, installability. */
-const CACHE = 'cds-photo-v2';
+const CACHE = 'cds-photo-v3';
 const SHELL = [
   './',
   './assets/styles.css',

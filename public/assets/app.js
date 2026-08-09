@@ -45,6 +45,8 @@
   const lightboxCounter = $('.lightbox-counter');
   const lightboxPrev = $('.lightbox-prev');
   const lightboxNext = $('.lightbox-next');
+  const lightboxShare = $('.lightbox-share');
+  const toastEl = $('.toast');
 
   let activeTag = null;
   let visibleCount = BATCH_SIZE;
@@ -100,12 +102,27 @@
 
   function pad(number) { return String(number).padStart(2, '0'); }
 
+  // The two static <meta name="theme-color" media="..."> tags only follow OS
+  // preference. Once a user picks an explicit light/dark mode, the browser
+  // chrome color needs to follow that choice too, not just the OS setting.
+  function syncThemeColorMeta(isDark) {
+    let tag = document.getElementById('theme-color-dynamic');
+    if (!tag) {
+      tag = document.createElement('meta');
+      tag.name = 'theme-color';
+      tag.id = 'theme-color-dynamic';
+      document.head.appendChild(tag);
+    }
+    tag.content = isDark ? '#0b0c0e' : '#f6f4ef';
+  }
+
   function resolveTheme() {
     const explicit = html.dataset.theme;
     const isDark = explicit === 'dark' || (explicit === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     html.dataset.resolvedTheme = isDark ? 'dark' : 'light';
     themeToggle?.setAttribute('aria-label', `Switch to ${isDark ? 'light' : 'dark'} mode`);
     themeToggle?.setAttribute('title', `Switch to ${isDark ? 'light' : 'dark'} mode`);
+    syncThemeColorMeta(isDark);
   }
 
   function setTheme(theme) {
@@ -127,7 +144,12 @@
   }
 
   function allTags() {
-    return [...new Set(photos.flatMap(photo => photo.tags))].sort((a, b) => a.localeCompare(b));
+    const counts = new Map();
+    for (const photo of photos) {
+      for (const tag of photo.tags) counts.set(tag, (counts.get(tag) || 0) + 1);
+    }
+    // Most-photographed subjects first; alphabetical as a tiebreaker for stability.
+    return [...counts.keys()].sort((a, b) => counts.get(b) - counts.get(a) || a.localeCompare(b));
   }
 
   function renderFilters() {
@@ -455,16 +477,123 @@
     if (typeof lightbox.close === 'function' && lightbox.open) lightbox.close(); else lightbox.removeAttribute('open');
   }
 
+  let toastTimer = null;
+  function toast(message) {
+    if (!toastEl) return;
+    toastEl.textContent = message;
+    toastEl.classList.add('is-visible');
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => toastEl.classList.remove('is-visible'), 2400);
+  }
+
+  function extFromMime(type) {
+    const sub = (type || '').split('/')[1] || 'jpg';
+    return sub === 'jpeg' ? 'jpg' : sub;
+  }
+
+  function slugify(value) {
+    return String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'photo';
+  }
+
+  const PHOTO_PARAM = 'photo';
+
+  // A link back to this site with ?photo=<path> — opening it re-launches the
+  // gallery with that exact photograph already showing in the viewer.
+  function buildShareUrl(photo) {
+    const url = new URL(window.location.href);
+    url.hash = '';
+    url.searchParams.set(PHOTO_PARAM, photo.path);
+    return url.href;
+  }
+
+  async function sharePhoto(photo) {
+    if (!photo) return;
+    const shareUrl = buildShareUrl(photo);
+    const shareText = [photo.title, detailLine(photo)].filter(Boolean).join(' — ');
+
+    // Share the site link (so recipients land back on the gallery with this
+    // exact photo open) together with the image file where the platform
+    // supports combining both — most share targets that accept files also
+    // show the accompanying text/url, so the recipient gets the photo AND a
+    // working link back to it.
+    try {
+      if (navigator.canShare && navigator.share) {
+        const response = await fetch(photo.previewSrc);
+        const blob = await response.blob();
+        const file = new File([blob], `${slugify(photo.title)}.${extFromMime(blob.type)}`, { type: blob.type });
+        const withFile = { files: [file], title: photo.title, text: `${shareText}\n${shareUrl}` };
+        if (navigator.canShare(withFile)) {
+          await navigator.share(withFile);
+          return;
+        }
+      }
+      if (navigator.share) {
+        await navigator.share({ title: photo.title, text: shareText, url: shareUrl });
+        return;
+      }
+      throw new Error('share-unsupported');
+    } catch (err) {
+      if (err && err.name === 'AbortError') return; // user dismissed the share sheet
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast('Link copied — opens this photo');
+      } catch (_) {
+        toast('Could not share this photo');
+      }
+    }
+  }
+
+  // If the page was opened via a shared photo link (?photo=<path>), jump
+  // straight to that photograph in the viewer once the gallery is ready.
+  function openSharedPhotoFromUrl() {
+    const path = new URLSearchParams(window.location.search).get(PHOTO_PARAM);
+    if (!path) return;
+    const index = filteredPhotos.findIndex(photo => photo.path === path);
+    if (index === -1) return;
+    openLightbox(index);
+    // Strip the param so refreshing or closing the viewer doesn't keep
+    // reopening the same photo, or leave a stale link in the address bar.
+    const cleanUrl = new URL(window.location.href);
+    cleanUrl.searchParams.delete(PHOTO_PARAM);
+    window.history.replaceState(null, '', cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+  }
+
+  function lightboxStep(delta) {
+    if (filteredPhotos.length < 2) return;
+    lightboxIndex = (lightboxIndex + delta + filteredPhotos.length) % filteredPhotos.length;
+    updateLightbox();
+  }
+
   function setupLightbox() {
     lightbox?.addEventListener('click', event => { if (event.target.closest('[data-lightbox-close]')) closeLightbox(); });
-    lightboxPrev?.addEventListener('click', () => { lightboxIndex = (lightboxIndex - 1 + filteredPhotos.length) % filteredPhotos.length; updateLightbox(); });
-    lightboxNext?.addEventListener('click', () => { lightboxIndex = (lightboxIndex + 1) % filteredPhotos.length; updateLightbox(); });
+    lightboxPrev?.addEventListener('click', () => lightboxStep(-1));
+    lightboxNext?.addEventListener('click', () => lightboxStep(1));
+    lightboxShare?.addEventListener('click', () => sharePhoto(filteredPhotos[lightboxIndex]));
     document.addEventListener('keydown', event => {
       if (!lightbox?.open) return;
       if (event.key === 'Escape') closeLightbox();
-      if (event.key === 'ArrowLeft' && filteredPhotos.length > 1) { lightboxIndex = (lightboxIndex - 1 + filteredPhotos.length) % filteredPhotos.length; updateLightbox(); }
-      if (event.key === 'ArrowRight' && filteredPhotos.length > 1) { lightboxIndex = (lightboxIndex + 1) % filteredPhotos.length; updateLightbox(); }
+      if (event.key === 'ArrowLeft') lightboxStep(-1);
+      if (event.key === 'ArrowRight') lightboxStep(1);
     });
+
+    // Touch swipe left/right to move between photos, mirroring the hero's
+    // swipe gesture. Only single-finger horizontal drags trigger it, so
+    // pinch-zoom and vertical gestures pass through untouched.
+    let touchStart = null;
+    const media = $('.lightbox-media');
+    media?.addEventListener('touchstart', event => {
+      if (event.touches.length !== 1) { touchStart = null; return; }
+      const t = event.touches[0];
+      touchStart = { x: t.clientX, y: t.clientY };
+    }, { passive: true });
+    media?.addEventListener('touchend', event => {
+      if (!touchStart) return;
+      const t = event.changedTouches[0];
+      const dx = (t?.clientX ?? touchStart.x) - touchStart.x;
+      const dy = (t?.clientY ?? touchStart.y) - touchStart.y;
+      touchStart = null;
+      if (Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy) * 1.5) lightboxStep(dx < 0 ? 1 : -1);
+    }, { passive: true });
   }
 
   function setupMobileTabs() {
@@ -503,4 +632,5 @@
   function setupMisc() { const year = $('.current-year'); if (year) year.textContent = String(new Date().getFullYear()); }
 
   setupTheme(); setupHeader(); setupGallery(); setupHero(); setupLightbox(); setupMobileTabs(); setupMisc();
+  openSharedPhotoFromUrl();
 })();

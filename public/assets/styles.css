@@ -1103,6 +1103,37 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
 }
 
 /* -------------------------------------------------------------------------- */
+/* Toast                                                                       */
+/* -------------------------------------------------------------------------- */
+
+.toast {
+  position: fixed;
+  z-index: 1200;
+  left: 50%;
+  bottom: clamp(24px, 6vh, 56px);
+  padding: 12px 20px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 999px;
+  background: rgba(20, 21, 24, .92);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 650;
+  white-space: nowrap;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 10px);
+  transition: opacity 220ms ease, transform 220ms var(--ease-out);
+}
+
+.toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* -------------------------------------------------------------------------- */
 /* Install (PWA) prompt                                                        */
 /* -------------------------------------------------------------------------- */
 
@@ -1259,10 +1290,22 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
   letter-spacing: .13em;
 }
 
+.lightbox-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lightbox-share,
 .lightbox-close {
   background: rgba(255, 255, 255, .09);
   color: #fff;
   transition: background 180ms ease, transform 180ms var(--ease);
+}
+
+.lightbox-share:hover {
+  background: rgba(255, 255, 255, .16);
+  transform: scale(1.05);
 }
 
 .lightbox-close:hover {
@@ -1476,6 +1519,14 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
 
   .hero-frame::before {
     filter: blur(22px) brightness(.55) saturate(.9);
+  }
+
+  /* Anchor the contained photo above dead-center instead of exactly centering
+     it: shifts the letterbox gap mostly below the image (behind the caption)
+     rather than splitting it evenly above and below, without pinning the
+     photo flush to the header. */
+  .hero-frame::after {
+    background-position: center 38%;
   }
 
   /* Keep the whole photo visible on phones (contain, from the base rule) —
@@ -1706,6 +1757,10 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
     bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 12px);
     width: auto;
     flex-wrap: wrap;
+  }
+
+  .toast {
+    bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 16px);
   }
 
   .install-actions {

@@ -3,6 +3,7 @@
 
   const DATA = window.CDS_PHOTO_DATA || { photos: [], settings: {} };
   const rawPhotos = Array.isArray(DATA.photos) ? DATA.photos : [];
+  const BASE_PATH = typeof DATA.base === 'string' && DATA.base ? DATA.base : '/';
   const settings = DATA.settings || {};
   const HERO_INTERVAL = Math.max(3500, Number(settings.heroInterval) || 7000);
   const BATCH_SIZE = Math.max(12, Number(settings.galleryBatchSize) || 36);
@@ -74,6 +75,7 @@
     heroMobileSrc: photo.heroMobileSrc || photo.heroSrc || photo.previewSrc,
     originalSrc: photo.originalSrc || photo.previewSrc,
     path: photo.path || photo.previewSrc,
+    slug: photo.slug || '',
     width: Number(photo.width) || 0,
     height: Number(photo.height) || 0,
     format: photo.format || '',
@@ -523,11 +525,17 @@
 
   const PHOTO_PARAM = 'photo';
 
-  // A link back to this site with ?photo=<path> — opening it re-launches the
-  // gallery with that exact photograph already showing in the viewer.
+  // Each photo has its own static page (/photo/<slug>/) built at compile time
+  // with that exact photo's title/description/image in its Open Graph tags —
+  // see src/pages/photo/[slug].astro. Link-preview crawlers (Messages,
+  // WhatsApp, Slack, Twitter/X…) fetch that page directly and never run our
+  // JS, so this is what makes the shared "card" show the right photo instead
+  // of the whole site's generic image. Visiting the link in a real browser
+  // redirects straight into the interactive gallery with the photo open.
   function buildShareUrl(photo) {
-    const url = new URL(window.location.href);
-    url.hash = '';
+    if (photo.slug) return new URL(`${BASE_PATH}photo/${photo.slug}/`, window.location.origin).href;
+    // Fallback for a photo with no slug: deep-link the gallery directly.
+    const url = new URL(window.location.origin + BASE_PATH);
     url.searchParams.set(PHOTO_PARAM, photo.path);
     return url.href;
   }
@@ -636,31 +644,104 @@
       if (event.key === 'ArrowRight') lightboxStep(1);
     });
 
-    // Swipe gestures anywhere in the viewer (not just over the photo itself —
-    // the letterboxed/blurred space counts too, so the hit area is the whole
-    // screen, matching how a phone gallery app behaves): horizontal swipes
-    // move between photos, vertical swipes close the viewer.
-    let touchStart = null;
-    lightbox?.addEventListener('touchstart', event => {
+    setupLightboxDrag();
+  }
+
+  // Swipe gestures that follow the finger in real time — like Instagram/
+  // Reddit/YouTube — instead of only resolving once the gesture completes.
+  // Horizontal drags slide the photo with your thumb and commit to the next/
+  // previous photo past a distance threshold (springing back otherwise);
+  // vertical drags fade/slide the photo away to close the viewer. Bound to
+  // the whole shell (not just the image) so the letterboxed/blurred space
+  // and the caption area are draggable too.
+  function setupLightboxDrag() {
+    const shell = $('.lightbox-shell');
+    const img = lightboxImage;
+    if (!shell || !img) return;
+
+    let startX = 0;
+    let startY = 0;
+    let dx = 0;
+    let dy = 0;
+    let axis = null; // 'x' | 'y' | null
+    let dragging = false;
+
+    const setTransform = (x, y, opacity) => {
+      img.style.transform = `translate(${x}px, ${y}px)`;
+      img.style.opacity = String(opacity);
+    };
+
+    const reset = (animated) => {
+      img.style.transition = animated ? 'transform 220ms var(--ease-out), opacity 220ms ease' : 'none';
+      setTransform(0, 0, 1);
+      shell.classList.remove('is-dragging');
+      axis = null;
+      dragging = false;
+    };
+
+    shell.addEventListener('touchstart', event => {
       if (event.touches.length !== 1 || event.target.closest('.lightbox-nav, .icon-button')) {
-        touchStart = null;
+        axis = null;
         return;
       }
       const t = event.touches[0];
-      touchStart = { x: t.clientX, y: t.clientY };
+      startX = t.clientX;
+      startY = t.clientY;
+      dx = 0;
+      dy = 0;
+      axis = null;
+      dragging = false;
+      img.style.transition = 'none';
     }, { passive: true });
-    lightbox?.addEventListener('touchend', event => {
-      if (!touchStart) return;
-      const t = event.changedTouches[0];
-      const dx = (t?.clientX ?? touchStart.x) - touchStart.x;
-      const dy = (t?.clientY ?? touchStart.y) - touchStart.y;
-      touchStart = null;
-      const absX = Math.abs(dx);
-      const absY = Math.abs(dy);
-      if (absX < 50 && absY < 50) return; // a tap, not a swipe
-      if (absY > absX * 1.2) closeLightbox();
-      else if (absX > absY * 1.2) lightboxStep(dx < 0 ? 1 : -1);
-    }, { passive: true });
+
+    shell.addEventListener('touchmove', event => {
+      if (axis === false || event.touches.length !== 1) return; // false = deliberately not dragging
+      const t = event.touches[0];
+      dx = t.clientX - startX;
+      dy = t.clientY - startY;
+      if (!axis) {
+        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+        axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+        dragging = true;
+        shell.classList.add('is-dragging');
+      }
+      if (!dragging) return;
+      event.preventDefault(); // own the gesture once committed — no page scroll / edge-back nav
+      if (axis === 'x') {
+        setTransform(dx, 0, Math.max(0.4, 1 - Math.abs(dx) / (window.innerWidth * 0.85)));
+      } else {
+        setTransform(0, dy, Math.max(0.25, 1 - Math.abs(dy) / (window.innerHeight * 0.55)));
+      }
+    }, { passive: false });
+
+    const finishDrag = () => {
+      if (!dragging) { axis = null; return; }
+      img.style.transition = 'transform 220ms var(--ease-out), opacity 220ms ease';
+
+      if (axis === 'x' && Math.abs(dx) > 70 && filteredPhotos.length > 1) {
+        const dir = dx < 0 ? 1 : -1;
+        const flyoutX = dir * window.innerWidth * 1.1;
+        setTransform(flyoutX, 0, 0);
+        window.setTimeout(() => {
+          lightboxStep(dir);
+          img.style.transition = 'none';
+          setTransform(-flyoutX * 0.5, 0, 0);
+          void img.offsetWidth; // force reflow so the next transition actually animates
+          img.style.transition = 'transform 240ms var(--ease-out), opacity 240ms ease';
+          setTransform(0, 0, 1);
+          window.setTimeout(() => reset(false), 250);
+        }, 210);
+      } else if (axis === 'y' && Math.abs(dy) > 90) {
+        const dir = dy < 0 ? -1 : 1;
+        setTransform(0, dir * window.innerHeight, 0);
+        window.setTimeout(() => { closeLightbox(); reset(false); }, 190);
+      } else {
+        reset(true);
+      }
+    };
+
+    shell.addEventListener('touchend', finishDrag, { passive: true });
+    shell.addEventListener('touchcancel', () => reset(true), { passive: true });
   }
 
   function setupMobileTabs() {

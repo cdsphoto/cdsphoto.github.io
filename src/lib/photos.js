@@ -86,8 +86,23 @@ async function buildPhoto([modulePath, image]) {
     optimizedSingle(image, width, HERO_MOBILE_MAX, Math.min(84, PREVIEW_QUALITY + 2)),
   ]);
 
+  // A dedicated per-photo social-preview image (standard 1200x630 card size,
+  // JPG for the widest crawler/app compatibility). Used by the photo's own
+  // static share page so link previews show that actual photograph, not a
+  // single site-wide image.
+  const ogImage = await getImage({
+    src: image,
+    width: 1200,
+    height: 630,
+    fit: 'cover',
+    format: 'jpg',
+    quality: 82,
+  });
+
   return {
     path,
+    slug: path.replace(/\.[^.]+$/, '').replace(/\//g, '--'),
+    ogImageSrc: ogImage.src,
     previewSrc: preview.src,
     previewSrcSet: preview.srcSet?.attribute || '',
     heroSrc,

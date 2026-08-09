@@ -685,9 +685,7 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
 }
 
 .filter-row {
-  position: sticky;
-  z-index: 30;
-  top: 78px;
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -956,7 +954,7 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
   font-weight: 700;
   cursor: pointer;
   transition: background 180ms ease, color 180ms ease, transform 180ms var(--ease);
-  animation: showMoreHeartbeat 2.6s ease-in-out infinite;
+  animation: showMoreBreathe 2.8s ease-in-out infinite;
 }
 
 .show-more:hover {
@@ -966,15 +964,17 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
   animation-play-state: paused;
 }
 
-/* A quiet "lub-dub" pulse — glows in the button's own color (no new hue
-   added), pauses on hover so it doesn't fight the hover transform. */
-@keyframes showMoreHeartbeat {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 28%, transparent); }
-  8% { transform: scale(1.035); }
-  16% { transform: scale(1); box-shadow: 0 0 0 7px color-mix(in srgb, currentColor 0%, transparent); }
-  24% { transform: scale(1.035); }
-  32% { transform: scale(1); box-shadow: 0 0 0 7px color-mix(in srgb, currentColor 0%, transparent); }
-  70% { box-shadow: 0 0 0 0 transparent; }
+/* A slow, clearly-visible "breathing" glow — expands and softens in the
+   button's own color (no new hue added), pauses on hover. */
+@keyframes showMoreBreathe {
+  0%, 100% {
+    border-color: var(--line-strong);
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 50%, transparent), 0 0 14px 1px color-mix(in srgb, currentColor 22%, transparent);
+  }
+  50% {
+    border-color: color-mix(in srgb, currentColor 60%, var(--line-strong));
+    box-shadow: 0 0 0 9px color-mix(in srgb, currentColor 0%, transparent), 0 0 30px 8px color-mix(in srgb, currentColor 45%, transparent);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1488,6 +1488,15 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
      around the full element box including the empty bars. */
   filter: drop-shadow(0 24px 60px rgba(0, 0, 0, .5));
   transition: opacity 240ms ease;
+}
+
+/* While a swipe is in progress, keep the eye on the photo — the header and
+   caption fade back so they don't compete with the drag. */
+.lightbox-shell.is-dragging .lightbox-header,
+.lightbox-shell.is-dragging .lightbox-caption {
+  transition: opacity 150ms ease;
+  opacity: .3;
+  pointer-events: none;
 }
 
 .lightbox-image.is-loading-full {

@@ -953,12 +953,25 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
   font-weight: 700;
   cursor: pointer;
   transition: background 180ms ease, color 180ms ease, transform 180ms var(--ease);
+  animation: showMoreHeartbeat 2.6s ease-in-out infinite;
 }
 
 .show-more:hover {
   background: var(--text);
   color: var(--bg);
   transform: translateY(-1px);
+  animation-play-state: paused;
+}
+
+/* A quiet "lub-dub" pulse — glows in the button's own color (no new hue
+   added), pauses on hover so it doesn't fight the hover transform. */
+@keyframes showMoreHeartbeat {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 28%, transparent); }
+  8% { transform: scale(1.035); }
+  16% { transform: scale(1); box-shadow: 0 0 0 7px color-mix(in srgb, currentColor 0%, transparent); }
+  24% { transform: scale(1.035); }
+  32% { transform: scale(1); box-shadow: 0 0 0 7px color-mix(in srgb, currentColor 0%, transparent); }
+  70% { box-shadow: 0 0 0 0 transparent; }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1131,6 +1144,146 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
 .toast.is-visible {
   opacity: 1;
   transform: translate(-50%, 0);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Share dialog                                                                */
+/* -------------------------------------------------------------------------- */
+
+.share-dialog {
+  z-index: 1100;
+  width: min(420px, calc(100% - 32px));
+  max-width: none;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: #fff;
+}
+
+.share-dialog::backdrop {
+  background: rgba(0, 0, 0, .72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.share-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+}
+
+.share-dialog-panel {
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: var(--radius-lg);
+  background: rgba(20, 21, 24, .96);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.share-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.share-dialog-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.share-dialog-close {
+  width: 34px;
+  height: 34px;
+  background: rgba(255, 255, 255, .09);
+  color: #fff;
+}
+
+.share-dialog-close svg {
+  width: 15px;
+  height: 15px;
+}
+
+.share-link-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.share-link-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .06);
+  color: #fff;
+  font-size: 13px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.share-copy-btn {
+  flex: 0 0 auto;
+  height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 12px;
+  background: #fff;
+  color: #0b0c0e;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 160ms var(--ease);
+}
+
+.share-copy-btn:hover {
+  transform: translateY(-1px);
+}
+
+.share-targets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.share-target {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 4px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 14px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 620;
+  transition: background 160ms ease, transform 160ms var(--ease);
+}
+
+.share-target:hover {
+  background: rgba(255, 255, 255, .08);
+  transform: translateY(-1px);
+}
+
+.share-target-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .1);
+}
+
+.share-target-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1526,7 +1679,7 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
      rather than splitting it evenly above and below, without pinning the
      photo flush to the header. */
   .hero-frame::after {
-    background-position: center 38%;
+    background-position: center var(--hero-photo-pos, 30%);
   }
 
   /* Keep the whole photo visible on phones (contain, from the base rule) —
@@ -1569,10 +1722,17 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
     height: 44px;
   }
 
+  /* On short phone screens the bottom-anchored bar can get squeezed out
+     by the tab bar. Move it to the top of the hero instead — below the
+     header, spanning full width, like a stories-style progress indicator —
+     where it's never at risk of being hidden regardless of viewport height. */
   .hero-progress {
-    right: max(18px, env(safe-area-inset-right, 0px));
-    bottom: calc(8px + var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
-    left: max(18px, env(safe-area-inset-left, 0px));
+    top: 0;
+    right: 0;
+    bottom: auto;
+    left: 0;
+    height: 2px;
+    background: rgba(255, 255, 255, .14);
   }
 
   .section-heading {
@@ -1691,6 +1851,32 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
 
   .lightbox-next {
     right: 8px;
+  }
+
+  /* Modern floating share button, detached from the header and pinned to
+     the bottom-right corner of the screen — out of the way of the swipe
+     gesture area and always reachable with a thumb. */
+  .lightbox-share {
+    position: fixed;
+    z-index: 60;
+    right: calc(16px + env(safe-area-inset-right, 0px));
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    width: 54px;
+    height: 54px;
+    background: rgba(20, 21, 24, .78);
+    border: 1px solid rgba(255, 255, 255, .14);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .lightbox-share svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  .lightbox-header-actions {
+    gap: 0;
   }
 
   .lightbox-caption {

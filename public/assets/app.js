@@ -48,6 +48,11 @@
   const lightboxShare = $('.lightbox-share');
   const toastEl = $('.toast');
 
+  const shareDialog = $('.share-dialog');
+  const shareLinkInput = $('.share-link-input');
+  const shareCopyBtn = $('.share-copy-btn');
+  const shareTargets = $$('.share-target');
+
   let activeTag = null;
   let visibleCount = BATCH_SIZE;
   let filteredPhotos = [];
@@ -57,6 +62,7 @@
   let activeFrame = 0;
   let heroTimer = null;
   let heroPaused = false;
+  let heroResizeTimer = null;
   let heroTouchStartX = null;
   let lightboxLoadToken = 0;
 
@@ -350,6 +356,30 @@
     container.replaceChildren(...tags.slice(0, limit).map(createTagPill));
   }
 
+  // On phones, position the featured photo so its bottom edge always lands
+  // just above the caption — measured live from the actual rendered photo
+  // aspect ratio and the actual caption height, so it holds up across every
+  // screen size and every photo's title/tag-line length, instead of a single
+  // guessed percentage that only fit one device.
+  function positionHeroPhoto() {
+    if (!heroStage || window.matchMedia('(min-width: 761px)').matches) return;
+    const photo = featuredPhotos[heroIndex];
+    const content = $('.hero-content');
+    const frame = heroFrames[activeFrame] || heroFrames[0];
+    if (!photo || !content || !frame) return;
+    const frameRect = frame.getBoundingClientRect();
+    const contentRect = content.getBoundingClientRect();
+    if (!frameRect.height || !frameRect.width) return;
+    const ratio = Number(photo.aspectRatio) || 1.5;
+    const displayedH = frameRect.width / ratio; // photo is width-constrained under `contain` here
+    const leftover = frameRect.height - displayedH;
+    if (leftover <= 0) return; // photo already fills the frame vertically, nothing to position
+    const gap = 14;
+    const desiredImgBottom = contentRect.top - gap;
+    const percent = Math.max(0, Math.min(1, (desiredImgBottom - frameRect.top - displayedH) / leftover));
+    html.style.setProperty('--hero-photo-pos', `${(percent * 100).toFixed(1)}%`);
+  }
+
   function showHero(nextIndex, immediate = false) {
     if (!featuredPhotos.length || !heroStage) return;
     heroIndex = (nextIndex + featuredPhotos.length) % featuredPhotos.length;
@@ -373,6 +403,7 @@
       if (heroCurrent) heroCurrent.textContent = pad(heroIndex + 1);
       if (heroTotal) heroTotal.textContent = pad(featuredPhotos.length);
       heroMeta?.classList.remove('is-changing');
+      positionHeroPhoto();
       {
         const nextPhoto = featuredPhotos[(heroIndex + 1) % featuredPhotos.length];
         if (nextPhoto) preload(window.matchMedia('(max-width: 700px)').matches ? nextPhoto.heroMobileSrc : nextPhoto.heroSrc);
@@ -409,6 +440,10 @@
       if (document.hidden) { window.clearTimeout(heroTimer); heroProgress?.classList.remove('is-running'); }
       else if (!heroPaused) scheduleHero();
     });
+    window.addEventListener('resize', () => {
+      window.clearTimeout(heroResizeTimer);
+      heroResizeTimer = window.setTimeout(positionHeroPhoto, 120);
+    }, { passive: true });
   }
 
   function updateLightbox() {
@@ -497,32 +532,75 @@
     return url.href;
   }
 
-  async function sharePhoto(photo) {
-    if (!photo) return;
+  function openShareDialog(photo) {
+    if (!shareDialog) return;
     const shareUrl = buildShareUrl(photo);
     const shareText = [photo.title, detailLine(photo)].filter(Boolean).join(' — ');
 
-    // Share a link, not the raw image file: OS share sheets (Windows, and
-    // several Android targets) treat an attached file as primary and drop
-    // or bury the accompanying text/url, so the recipient never sees a
-    // working link back to the site. A link-only share is what every
-    // platform's share sheet reliably passes through, and it's what opens
-    // this exact photo when followed.
-    try {
-      if (navigator.share) {
+    if (shareLinkInput) shareLinkInput.value = shareUrl;
+
+    const targetHrefs = {
+      x: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(`${shareText}\n${shareUrl}`)}`,
+      email: `mailto:?subject=${encodeURIComponent(photo.title)}&body=${encodeURIComponent(`${shareText}\n\n${shareUrl}`)}`,
+    };
+    shareTargets.forEach(link => {
+      const href = targetHrefs[link.dataset.target];
+      if (href) link.href = href;
+    });
+
+    if (typeof shareDialog.showModal === 'function') shareDialog.showModal(); else shareDialog.setAttribute('open', '');
+    window.setTimeout(() => shareLinkInput?.select(), 50);
+  }
+
+  function closeShareDialog() {
+    if (!shareDialog) return;
+    if (typeof shareDialog.close === 'function' && shareDialog.open) shareDialog.close();
+    else shareDialog.removeAttribute('open');
+  }
+
+  function setupShareDialog() {
+    if (!shareDialog) return;
+    shareDialog.addEventListener('click', event => { if (event.target.closest('[data-share-close]')) closeShareDialog(); });
+    shareCopyBtn?.addEventListener('click', async () => {
+      shareLinkInput?.select();
+      let copied = false;
+      try {
+        await navigator.clipboard.writeText(shareLinkInput?.value || '');
+        copied = true;
+      } catch (_) {
+        // Clipboard API unavailable or denied — fall back to the older
+        // synchronous copy command, which works in far more embedded/
+        // restricted browser contexts since it doesn't need a permission grant.
+        try { copied = document.execCommand('copy'); } catch (_) { copied = false; }
+      }
+      toast(copied ? 'Link copied — opens this photo' : 'Select the link above and copy it manually');
+    });
+    document.addEventListener('keydown', event => {
+      if (shareDialog.open && event.key === 'Escape') closeShareDialog();
+    });
+  }
+
+  async function sharePhoto(photo) {
+    if (!photo) return;
+    // The native OS share sheet is the best experience where it's actually
+    // available and working, but it's unreliable across browsers/embedded
+    // contexts (undefined entirely in several, silently rejects in others).
+    // Any failure other than the user explicitly cancelling falls back to a
+    // dialog that always works: a visible, selectable link plus plain-URL
+    // share targets that need no browser API support at all.
+    if (navigator.share) {
+      try {
+        const shareUrl = buildShareUrl(photo);
+        const shareText = [photo.title, detailLine(photo)].filter(Boolean).join(' — ');
         await navigator.share({ title: photo.title, text: shareText, url: shareUrl });
         return;
-      }
-      throw new Error('share-unsupported');
-    } catch (err) {
-      if (err && err.name === 'AbortError') return; // user dismissed the share sheet
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        toast('Link copied — opens this photo');
-      } catch (_) {
-        toast('Could not share this photo');
+      } catch (err) {
+        if (err && err.name === 'AbortError') return; // user dismissed the share sheet
       }
     }
+    openShareDialog(photo);
   }
 
   // If the page was opened via a shared photo link (?photo=<path>), jump
@@ -558,23 +636,30 @@
       if (event.key === 'ArrowRight') lightboxStep(1);
     });
 
-    // Touch swipe left/right to move between photos, mirroring the hero's
-    // swipe gesture. Only single-finger horizontal drags trigger it, so
-    // pinch-zoom and vertical gestures pass through untouched.
+    // Swipe gestures anywhere in the viewer (not just over the photo itself —
+    // the letterboxed/blurred space counts too, so the hit area is the whole
+    // screen, matching how a phone gallery app behaves): horizontal swipes
+    // move between photos, vertical swipes close the viewer.
     let touchStart = null;
-    const media = $('.lightbox-media');
-    media?.addEventListener('touchstart', event => {
-      if (event.touches.length !== 1) { touchStart = null; return; }
+    lightbox?.addEventListener('touchstart', event => {
+      if (event.touches.length !== 1 || event.target.closest('.lightbox-nav, .icon-button')) {
+        touchStart = null;
+        return;
+      }
       const t = event.touches[0];
       touchStart = { x: t.clientX, y: t.clientY };
     }, { passive: true });
-    media?.addEventListener('touchend', event => {
+    lightbox?.addEventListener('touchend', event => {
       if (!touchStart) return;
       const t = event.changedTouches[0];
       const dx = (t?.clientX ?? touchStart.x) - touchStart.x;
       const dy = (t?.clientY ?? touchStart.y) - touchStart.y;
       touchStart = null;
-      if (Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy) * 1.5) lightboxStep(dx < 0 ? 1 : -1);
+      const absX = Math.abs(dx);
+      const absY = Math.abs(dy);
+      if (absX < 50 && absY < 50) return; // a tap, not a swipe
+      if (absY > absX * 1.2) closeLightbox();
+      else if (absX > absY * 1.2) lightboxStep(dx < 0 ? 1 : -1);
     }, { passive: true });
   }
 
@@ -613,6 +698,6 @@
 
   function setupMisc() { const year = $('.current-year'); if (year) year.textContent = String(new Date().getFullYear()); }
 
-  setupTheme(); setupHeader(); setupGallery(); setupHero(); setupLightbox(); setupMobileTabs(); setupMisc();
+  setupTheme(); setupHeader(); setupGallery(); setupHero(); setupLightbox(); setupShareDialog(); setupMobileTabs(); setupMisc();
   openSharedPhotoFromUrl();
 })();

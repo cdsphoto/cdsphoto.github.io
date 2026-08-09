@@ -930,15 +930,16 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
   transition:
     transform 420ms var(--ease-out),
     box-shadow 420ms var(--ease-out),
-    opacity 550ms ease;
+    opacity 480ms ease var(--reveal-delay, 0ms);
 }
 
-/* Scroll-reveal target class, added by an IntersectionObserver in app.js as
-   each card enters the viewport. --reveal-y is what :hover below subtracts
-   from, rather than a separate `transform: translateY(-5px)` rule — that
-   would need higher specificity than `.is-visible` to win on hover, which
-   is a fragile thing to keep true across edits. This way there's only ever
-   one rule setting `transform` at a time. */
+/* Reveal target class, added unconditionally in app.js right after each
+   batch of cards is attached (a small stagger via --reveal-delay, set per
+   card from its position in the grid). --reveal-y is what :hover below
+   subtracts from, rather than a separate `transform: translateY(-5px)`
+   rule — that would need higher specificity than `.is-visible` to win on
+   hover, which is a fragile thing to keep true across edits. This way
+   there's only ever one rule setting `transform` at a time. */
 .gallery-card.is-visible {
   --reveal-y: 0px;
   opacity: 1;
@@ -974,6 +975,13 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
   display: block;
   width: 100%;
   overflow: hidden;
+  /* Rounds and clips its own content instead of relying on .gallery-card's
+     overflow:hidden to contain it. A 3D-transformed element (see the
+     perspective/rotate below, for the cursor-tilt effect) isn't reliably
+     clipped by an ancestor's border-radius in every engine — it can render
+     past the parent's rounded corners with hard square edges. Matching the
+     radius here too makes this element self-contained either way. */
+  border-radius: inherit;
   aspect-ratio: var(--photo-ratio, 1.5);
   background: var(--bg-soft);
   /* --tilt-x/--tilt-y are set on .gallery-card by a delegated pointermove

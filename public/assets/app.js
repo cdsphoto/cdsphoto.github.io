@@ -68,16 +68,6 @@
   let heroTouchStartX = null;
   let lightboxLoadToken = 0;
 
-  const revealedPhotoIds = new Set();
-  const cardRevealObserver = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
-      revealedPhotoIds.add(Number(entry.target.dataset.revealId));
-      entry.target.classList.add('is-visible');
-      cardRevealObserver.unobserve(entry.target);
-    });
-  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
-
   const photos = rawPhotos.filter(photo => photo && photo.previewSrc).map((photo, index) => ({
     id: index,
     previewSrc: photo.previewSrc,
@@ -142,6 +132,7 @@
     themeToggle?.setAttribute('aria-label', `Switch to ${isDark ? 'light' : 'dark'} mode`);
     themeToggle?.setAttribute('title', `Switch to ${isDark ? 'light' : 'dark'} mode`);
     syncThemeColorMeta(isDark);
+    document.dispatchEvent(new CustomEvent('cds:theme-change', { detail: { isDark } }));
   }
 
   function setTheme(theme) {
@@ -265,24 +256,15 @@
     button.setAttribute('aria-label', `Open ${photo.title}`);
     button.style.setProperty('--photo-ratio', String(photo.aspectRatio || 1));
 
-    // renderGallery() rebuilds the whole grid from scratch on every filter
-    // change and "Show more" click (replaceChildren, not an incremental
-    // append), so every card is technically a brand-new element each time.
-    // Without this, cards the visitor already scrolled past would flash
-    // back to invisible and re-reveal on every re-render. revealedPhotoIds
-    // makes the reveal a one-time-per-photo thing instead.
-    //
-    // The actual observe() call happens later, in revealVisibleCards(),
-    // once this element is attached to the document — not here, where it's
-    // still a detached node this function is about to return. Deciding
-    // on-screen-or-not against a detached node's (all-zero) bounding rect
-    // is meaningless, and it's exactly what made filtering look broken:
-    // every card was falling back to the observer path, and if it doesn't
-    // fire, the newly filtered results just never appear.
-    if (reducedMotion.matches || revealedPhotoIds.has(photo.id)) {
-      button.classList.add('is-visible');
-    }
-    button.dataset.revealId = String(photo.id);
+    // A small staggered fade-in, triggered in renderGallery() right after
+    // this batch is attached — deliberately not IntersectionObserver-based.
+    // An earlier version gated every card's visibility on the observer
+    // firing, with no other path to opacity:1; when it didn't fire for a
+    // given card (including, worst case, everything in a freshly filtered
+    // result set) that card just stayed invisible forever. This version
+    // can't get stuck: every render reveals its own cards unconditionally,
+    // capped at a modest delay so a long grid doesn't take forever to finish.
+    button.style.setProperty('--reveal-delay', `${Math.min(indexInFilter, 14) * 30}ms`);
 
     const imageWrap = document.createElement('span');
     imageWrap.className = 'gallery-image-wrap';
@@ -355,32 +337,24 @@
     return button;
   }
 
-  // Runs once new cards are actually attached to the document, so their
-  // bounding rects are real. Anything on or near screen right now reveals
-  // immediately, with no dependency on IntersectionObserver at all — that's
-  // the common case (first load, right after a filter click) and it must
-  // never be gated on the observer firing. Only genuinely below-the-fold
-  // cards go through the observer, for the scroll-in effect; each also gets
-  // a hard timeout backstop so a card can't stay invisible forever even if
-  // the observer never fires for it.
-  function revealVisibleCards() {
-    $$('.gallery-card:not(.is-visible)', galleryGrid).forEach(card => {
-      const rect = card.getBoundingClientRect();
-      const nearViewport = rect.top < window.innerHeight * 1.15 && rect.bottom > -200;
-      if (nearViewport) {
-        revealedPhotoIds.add(Number(card.dataset.revealId));
-        card.classList.add('is-visible');
-        return;
-      }
-      cardRevealObserver.observe(card);
-      window.setTimeout(() => {
-        if (card.isConnected && !card.classList.contains('is-visible')) {
-          revealedPhotoIds.add(Number(card.dataset.revealId));
-          card.classList.add('is-visible');
-          cardRevealObserver.unobserve(card);
-        }
-      }, 2500);
-    });
+  // Deliberately synchronous, not requestAnimationFrame-based: browsers
+  // throttle or fully pause rAF for backgrounded/non-visible tabs, which
+  // is exactly the kind of async dependency that made the previous
+  // (IntersectionObserver-based) version of this feature unreliable.
+  // Reading a layout property forces the browser to commit the
+  // just-attached cards' opacity:0 initial state as a real style
+  // right now, before is-visible flips it — skip that and both changes
+  // can land in the same paint, which quietly skips the transition
+  // instead of animating it. Either way, visibility itself never depends
+  // on anything but this function running.
+  function revealNewCards() {
+    const cards = $$('.gallery-card', galleryGrid);
+    if (reducedMotion.matches) {
+      cards.forEach(card => card.classList.add('is-visible'));
+      return;
+    }
+    void galleryGrid.offsetHeight;
+    cards.forEach(card => card.classList.add('is-visible'));
   }
 
   function renderGallery() {
@@ -388,7 +362,7 @@
     filteredPhotos = photos.filter(matchesActiveTags);
     const toRender = filteredPhotos.slice(0, visibleCount);
     galleryGrid.replaceChildren(...toRender.map(createGalleryCard));
-    revealVisibleCards();
+    revealNewCards();
     if (galleryCount) galleryCount.textContent = `${filteredPhotos.length} ${filteredPhotos.length === 1 ? 'photograph' : 'photographs'}`;
     if (galleryEmpty) galleryEmpty.hidden = filteredPhotos.length !== 0;
     if (showMoreWrap) showMoreWrap.hidden = visibleCount >= filteredPhotos.length;
@@ -942,11 +916,17 @@
     if (!groups.size) { container.hidden = true; return; }
 
     const map = window.L.map(container, { scrollWheelZoom: false, attributionControl: true });
-    window.L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    // CARTO's basemap tiles are free without an API key, same as the light
+    // set — a raster map can't just follow the page's CSS theme, and a
+    // CSS filter:invert() on the tile layer distorts hue (green land reads
+    // as magenta), so this swaps to CARTO's actual dark tile set instead.
+    const tileUrl = isDark => `https://{s}.basemaps.cartocdn.com/${isDark ? 'dark_all' : 'light_all'}/{z}/{x}/{y}{r}.png`;
+    const tileLayer = window.L.tileLayer(tileUrl(html.dataset.resolvedTheme === 'dark'), {
       subdomains: 'abcd',
       maxZoom: 18,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
     }).addTo(map);
+    document.addEventListener('cds:theme-change', event => tileLayer.setUrl(tileUrl(event.detail.isDark)));
 
     const dotIcon = window.L.divIcon({
       className: 'map-marker-dot',

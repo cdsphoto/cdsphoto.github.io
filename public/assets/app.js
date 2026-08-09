@@ -486,15 +486,6 @@
     toastTimer = window.setTimeout(() => toastEl.classList.remove('is-visible'), 2400);
   }
 
-  function extFromMime(type) {
-    const sub = (type || '').split('/')[1] || 'jpg';
-    return sub === 'jpeg' ? 'jpg' : sub;
-  }
-
-  function slugify(value) {
-    return String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'photo';
-  }
-
   const PHOTO_PARAM = 'photo';
 
   // A link back to this site with ?photo=<path> — opening it re-launches the
@@ -511,22 +502,13 @@
     const shareUrl = buildShareUrl(photo);
     const shareText = [photo.title, detailLine(photo)].filter(Boolean).join(' — ');
 
-    // Share the site link (so recipients land back on the gallery with this
-    // exact photo open) together with the image file where the platform
-    // supports combining both — most share targets that accept files also
-    // show the accompanying text/url, so the recipient gets the photo AND a
-    // working link back to it.
+    // Share a link, not the raw image file: OS share sheets (Windows, and
+    // several Android targets) treat an attached file as primary and drop
+    // or bury the accompanying text/url, so the recipient never sees a
+    // working link back to the site. A link-only share is what every
+    // platform's share sheet reliably passes through, and it's what opens
+    // this exact photo when followed.
     try {
-      if (navigator.canShare && navigator.share) {
-        const response = await fetch(photo.previewSrc);
-        const blob = await response.blob();
-        const file = new File([blob], `${slugify(photo.title)}.${extFromMime(blob.type)}`, { type: blob.type });
-        const withFile = { files: [file], title: photo.title, text: `${shareText}\n${shareUrl}` };
-        if (navigator.canShare(withFile)) {
-          await navigator.share(withFile);
-          return;
-        }
-      }
       if (navigator.share) {
         await navigator.share({ title: photo.title, text: shareText, url: shareUrl });
         return;

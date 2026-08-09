@@ -271,10 +271,16 @@
     // Without this, cards the visitor already scrolled past would flash
     // back to invisible and re-reveal on every re-render. revealedPhotoIds
     // makes the reveal a one-time-per-photo thing instead.
+    //
+    // The actual observe() call happens later, in revealVisibleCards(),
+    // once this element is attached to the document — not here, where it's
+    // still a detached node this function is about to return. Deciding
+    // on-screen-or-not against a detached node's (all-zero) bounding rect
+    // is meaningless, and it's exactly what made filtering look broken:
+    // every card was falling back to the observer path, and if it doesn't
+    // fire, the newly filtered results just never appear.
     if (reducedMotion.matches || revealedPhotoIds.has(photo.id)) {
       button.classList.add('is-visible');
-    } else {
-      cardRevealObserver.observe(button);
     }
     button.dataset.revealId = String(photo.id);
 
@@ -349,11 +355,40 @@
     return button;
   }
 
+  // Runs once new cards are actually attached to the document, so their
+  // bounding rects are real. Anything on or near screen right now reveals
+  // immediately, with no dependency on IntersectionObserver at all — that's
+  // the common case (first load, right after a filter click) and it must
+  // never be gated on the observer firing. Only genuinely below-the-fold
+  // cards go through the observer, for the scroll-in effect; each also gets
+  // a hard timeout backstop so a card can't stay invisible forever even if
+  // the observer never fires for it.
+  function revealVisibleCards() {
+    $$('.gallery-card:not(.is-visible)', galleryGrid).forEach(card => {
+      const rect = card.getBoundingClientRect();
+      const nearViewport = rect.top < window.innerHeight * 1.15 && rect.bottom > -200;
+      if (nearViewport) {
+        revealedPhotoIds.add(Number(card.dataset.revealId));
+        card.classList.add('is-visible');
+        return;
+      }
+      cardRevealObserver.observe(card);
+      window.setTimeout(() => {
+        if (card.isConnected && !card.classList.contains('is-visible')) {
+          revealedPhotoIds.add(Number(card.dataset.revealId));
+          card.classList.add('is-visible');
+          cardRevealObserver.unobserve(card);
+        }
+      }, 2500);
+    });
+  }
+
   function renderGallery() {
     if (!galleryGrid) return;
     filteredPhotos = photos.filter(matchesActiveTags);
     const toRender = filteredPhotos.slice(0, visibleCount);
     galleryGrid.replaceChildren(...toRender.map(createGalleryCard));
+    revealVisibleCards();
     if (galleryCount) galleryCount.textContent = `${filteredPhotos.length} ${filteredPhotos.length === 1 ? 'photograph' : 'photographs'}`;
     if (galleryEmpty) galleryEmpty.hidden = filteredPhotos.length !== 0;
     if (showMoreWrap) showMoreWrap.hidden = visibleCount >= filteredPhotos.length;

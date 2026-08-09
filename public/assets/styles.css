@@ -685,27 +685,50 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
 }
 
 .filter-row {
+  --fade-w: 36px;
   position: relative;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
-  width: auto;
+  width: 100%;
   max-width: 100%;
   margin: 0 0 10px;
   padding: 8px;
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: hidden;
   overscroll-behavior-inline: contain;
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: 999px;
   background: var(--surface);
   box-shadow: var(--shadow-sm);
   backdrop-filter: blur(18px) saturate(130%);
   -webkit-backdrop-filter: blur(18px) saturate(130%);
   scrollbar-width: none;
+  -webkit-mask-image: none;
+  mask-image: none;
+  transition: -webkit-mask-image 160ms ease, mask-image 160ms ease;
 }
 
 .filter-row::-webkit-scrollbar {
   display: none;
+}
+
+/* Fade the trailing edge(s) toward transparent as a visual hint that this
+   row scrolls — otherwise a row of chips that ends flush at the container
+   edge looks complete, and nothing suggests swiping/scrolling reveals more. */
+.filter-row.is-scrollable-end {
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - var(--fade-w)), transparent);
+  mask-image: linear-gradient(to right, black calc(100% - var(--fade-w)), transparent);
+}
+
+.filter-row.is-scrollable-start {
+  -webkit-mask-image: linear-gradient(to left, black calc(100% - var(--fade-w)), transparent);
+  mask-image: linear-gradient(to left, black calc(100% - var(--fade-w)), transparent);
+}
+
+.filter-row.is-scrollable-start.is-scrollable-end {
+  -webkit-mask-image: linear-gradient(to right, transparent, black var(--fade-w), black calc(100% - var(--fade-w)), transparent);
+  mask-image: linear-gradient(to right, transparent, black var(--fade-w), black calc(100% - var(--fade-w)), transparent);
 }
 
 .filter-chip {
@@ -1777,15 +1800,6 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
   .gallery-count {
     margin-top: 4px;
     white-space: nowrap;
-  }
-
-  .filter-row {
-    position: relative;
-    top: auto;
-    flex-wrap: nowrap;
-    width: 100%;
-    overflow-x: auto;
-    border-radius: 18px;
   }
 
   .filter-chip {

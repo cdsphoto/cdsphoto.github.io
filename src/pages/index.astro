@@ -15,7 +15,7 @@ const jsonLd = {
       '@type': 'Person',
       name: 'Chahat Singh',
       url: siteUrl,
-      jobTitle: 'Photographer',
+      description: 'Amateur photographer',
       ...(sameAs.length ? { sameAs } : {}),
       ...(site.location ? { homeLocation: { '@type': 'Place', name: site.location } } : {}),
     },

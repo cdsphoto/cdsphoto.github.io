@@ -160,6 +160,17 @@
     return [...counts.keys()].sort((a, b) => counts.get(b) - counts.get(a) || a.localeCompare(b));
   }
 
+  // Fades whichever edge(s) of the tag row still have more chips to reveal,
+  // as a visual hint that it scrolls — a row that ends flush at the edge
+  // otherwise looks complete with nothing suggesting there's more.
+  function updateFilterRowFade() {
+    if (!filterRow) return;
+    const canScrollLeft = filterRow.scrollLeft > 1;
+    const canScrollRight = filterRow.scrollLeft + filterRow.clientWidth < filterRow.scrollWidth - 1;
+    filterRow.classList.toggle('is-scrollable-start', canScrollLeft);
+    filterRow.classList.toggle('is-scrollable-end', canScrollRight);
+  }
+
   function renderFilters() {
     if (!filterRow) return;
     const tags = allTags();
@@ -181,6 +192,10 @@
       button.textContent = 'Untagged';
       filterRow.appendChild(button);
     }
+
+    updateFilterRowFade();
+    filterRow.addEventListener('scroll', updateFilterRowFade, { passive: true });
+    window.addEventListener('resize', updateFilterRowFade, { passive: true });
 
     filterRow.addEventListener('click', event => {
       const button = event.target.closest('[data-filter]');

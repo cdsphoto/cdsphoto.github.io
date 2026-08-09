@@ -9,8 +9,11 @@
   "location": "Boulder, Colorado",
   "specialties": ["Landscape", "Wildlife", "Night Sky", "Travel"],
   "email": "",
-  "instagramUrl": "",
-  "instagramLabel": "Instagram",
+  "socialLinks": [
+    { "label": "Instagram", "url": "https://www.instagram.com/chahatdeep/" },
+    { "label": "Phone Photography", "url": "https://www.instagram.com/photoonpixel/" }
+  ],
+  "analytics": { "provider": "", "id": "" },
   "heroInterval": 7000,
   "galleryBatchSize": 36,
   "galleryPreviewMaxWidth": 1200,

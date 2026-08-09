@@ -943,6 +943,7 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
 }
 
 .show-more {
+  position: relative;
   min-width: 150px;
   min-height: 48px;
   padding: 0 22px;
@@ -954,27 +955,39 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
   font-weight: 700;
   cursor: pointer;
   transition: background 180ms ease, color 180ms ease, transform 180ms var(--ease);
-  animation: showMoreBreathe 2.8s ease-in-out infinite;
 }
 
 .show-more:hover {
   background: var(--text);
   color: var(--bg);
   transform: translateY(-1px);
+}
+
+/* A slow, continuous "breathing" glow on its own layer, behind the button.
+   Only `opacity` is animated — box-shadow built from color-mix() doesn't
+   reliably tween between keyframes in every engine, which read as a sudden
+   flash instead of a fade; opacity always interpolates smoothly. */
+.show-more::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow: 0 0 0 1px color-mix(in srgb, currentColor 55%, transparent), 0 0 28px 7px color-mix(in srgb, currentColor 42%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  animation: showMoreBreathe 4.5s ease-in-out infinite;
+  transition: opacity 220ms ease;
+}
+
+.show-more:hover::after {
+  opacity: 0 !important;
   animation-play-state: paused;
 }
 
-/* A slow, clearly-visible "breathing" glow — expands and softens in the
-   button's own color (no new hue added), pauses on hover. */
 @keyframes showMoreBreathe {
-  0%, 100% {
-    border-color: var(--line-strong);
-    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 50%, transparent), 0 0 14px 1px color-mix(in srgb, currentColor 22%, transparent);
-  }
-  50% {
-    border-color: color-mix(in srgb, currentColor 60%, var(--line-strong));
-    box-shadow: 0 0 0 9px color-mix(in srgb, currentColor 0%, transparent), 0 0 30px 8px color-mix(in srgb, currentColor 45%, transparent);
-  }
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1057,6 +1070,12 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
 .about-meta a:hover {
   text-decoration: underline;
   text-underline-offset: 4px;
+}
+
+.about-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
 }
 
 .about-specialties {

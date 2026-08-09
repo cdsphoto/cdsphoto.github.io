@@ -11,7 +11,8 @@
     "location": "San Francisco, California",
     "order": 10,
     "featured": true,
-    "featuredOrder": 3
+    "featuredOrder": 3,
+    "alt": "The Golden Gate Bridge's red towers spanning the bay at sunset, San Francisco's skyline in the distance."
   },
   "colosseum-rome-dusk.jpg": {
     "title": "Two Thousand Years and Still Standing — The Colosseum",
@@ -23,7 +24,8 @@
     "description": "Rome's Colosseum stands floodlit against a violet dusk — nearly two thousand years of stone still commanding the skyline.",
     "location": "Rome, Italy",
     "year": 2018,
-    "order": 59
+    "order": 59,
+    "alt": "The Colosseum in Rome glowing amber at dusk, birds flying overhead against a purple sky."
   },
   "vatican-staircase-skylight-bw.jpg": {
     "title": "Look Up — Vatican Skylight",
@@ -35,7 +37,8 @@
     "description": "Looking straight up into the geometry of a Vatican skylight, concentric arches and glass resolving into a perfect octagon.",
     "location": "Vatican City",
     "year": 2018,
-    "order": 62
+    "order": 62,
+    "alt": "Looking straight up into an octagonal glass skylight above a spiral staircase, in black and white."
   },
   "st-peters-basilica-vatican.jpg": {
     "title": "Holding Court — St. Peter's Basilica",
@@ -46,7 +49,8 @@
     "description": "Evening light warms the facade of St. Peter's Basilica, the empty square lending the grand architecture a rare stillness.",
     "location": "Vatican City",
     "year": 2018,
-    "order": 60
+    "order": 60,
+    "alt": "St. Peter's Basilica facade lit up in the evening, an empty square in front."
   },
   "florence-skyline-sunset.jpg": {
     "title": "Cotton Candy Skies — Florence",
@@ -58,7 +62,8 @@
     "description": "Cotton-candy light settles over Florence, Brunelleschi's dome and the Palazzo Vecchio rising above the terracotta rooftops.",
     "location": "Florence, Italy",
     "year": 2018,
-    "order": 61
+    "order": 61,
+    "alt": "Florence's skyline at sunset, the Duomo's dome and bell tower rising above terracotta rooftops under a pink sky."
   },
   "sailboat-marina-dusk.jpg": {
     "title": "Masts and Mirrors — Marina at Dusk",
@@ -68,7 +73,8 @@
       "Golden Hour"
     ],
     "description": "Masts stand mirror-still over a glassy harbor at blue hour, dock lights bleeding gold into the water.",
-    "order": 55
+    "order": 55,
+    "alt": "Sailboats and their masts reflected in still water at a marina during blue hour."
   },
   "antelope-canyon-stairway.jpg": {
     "title": "Waves of Stone — Antelope Canyon",
@@ -81,7 +87,8 @@
     "year": 2017,
     "order": 47,
     "featured": true,
-    "featuredOrder": 10
+    "featuredOrder": 10,
+    "alt": "A visitor descending a metal stairway deep inside the glowing swirled walls of Antelope Canyon."
   },
   "seattle-skyline-night-bw.jpg": {
     "title": "Sleepless in Monochrome — Seattle Skyline",
@@ -92,7 +99,8 @@
     ],
     "description": "Seattle's skyline glitters across the water in monochrome, the Space Needle anchoring a long, quiet night exposure.",
     "location": "Seattle, Washington",
-    "order": 52
+    "order": 52,
+    "alt": "The Seattle skyline, including the Space Needle, lit up at night in a black-and-white panorama."
   },
   "yosemite-valley-star-trails.jpg": {
     "title": "The Sky Left Streaks — Yosemite Star Trails",
@@ -103,7 +111,8 @@
     ],
     "description": "Stars wheel over Yosemite Valley in long streaks while the last autumn color clings to the trees below the granite walls.",
     "location": "Yosemite National Park, California",
-    "order": 11
+    "order": 11,
+    "alt": "Circular star trails over Yosemite Valley, El Capitan and Half Dome silhouetted below."
   },
   "delicate-arch-golden-hour.jpg": {
     "title": "Golden Hour, Golden Arch — Delicate Arch",
@@ -115,7 +124,8 @@
     "description": "Delicate Arch glows at golden hour, framed by the snow-dusted La Sal Mountains on the horizon.",
     "location": "Arches National Park, Utah",
     "year": 2025,
-    "order": 64
+    "order": 64,
+    "alt": "Delicate Arch glowing gold in late-afternoon light, snow-capped mountains in the distance."
   },
   "antelope-canyon-blue-sky.jpg": {
     "title": "A Sliver of Sky — Antelope Canyon",
@@ -126,7 +136,8 @@
     "description": "A narrow ribbon of blue sky threads between the flame-colored walls of Antelope Canyon.",
     "location": "Page, Arizona",
     "year": 2017,
-    "order": 9
+    "order": 9,
+    "alt": "A narrow slot of blue sky visible between towering magenta and orange sandstone canyon walls."
   },
   "antelope-canyon-opening.jpg": {
     "title": "Light at the End — Antelope Canyon",
@@ -137,7 +148,8 @@
     "description": "Light spills through a canyon opening, igniting the layered sandstone in shades of amber and rust.",
     "location": "Page, Arizona",
     "year": 2017,
-    "order": 48
+    "order": 48,
+    "alt": "Light beaming through a canyon opening, illuminating layered amber and rust-colored sandstone."
   },
   "marina-bay-sands-night.jpg": {
     "title": "The Ship That Docked on Rooftops — Marina Bay Sands",
@@ -149,7 +161,8 @@
     "description": "Marina Bay Sands hovers over the water like a ship run aground on rooftops, Singapore glowing beneath it.",
     "location": "Singapore",
     "year": 2022,
-    "order": 50
+    "order": 50,
+    "alt": "Marina Bay Sands hotel and its rooftop illuminated blue at night, reflected in the water."
   },
   "singapore-skyline-night.jpg": {
     "title": "The City That Never Dims — Singapore Skyline",
@@ -161,7 +174,8 @@
     "description": "Singapore's financial district blazes across the bay, its towers doubled in the still night water.",
     "location": "Singapore",
     "year": 2022,
-    "order": 51
+    "order": 51,
+    "alt": "Singapore's illuminated skyline and a lit bridge reflected in the water at night."
   },
   "half-dome-sunset-glacier-point.jpg": {
     "title": "Last Light on the Giant — Half Dome",
@@ -173,7 +187,8 @@
     "location": "Yosemite National Park, California",
     "order": 7,
     "featured": true,
-    "featuredOrder": 9
+    "featuredOrder": 9,
+    "alt": "Half Dome glowing pink at sunset, seen from Glacier Point in Yosemite."
   },
   "antelope-canyon-abstract.jpg": {
     "title": "Sandstone in Motion — Antelope Canyon",
@@ -185,7 +200,8 @@
     "description": "The sandstone of Antelope Canyon dissolves into pure abstraction — waves of orange and violet carved by water and time.",
     "location": "Page, Arizona",
     "year": 2017,
-    "order": 49
+    "order": 49,
+    "alt": "Swirling orange and purple sandstone walls in Antelope Canyon, forming abstract wave-like rock patterns."
   },
   "snowy-mountain-forest.jpg": {
     "title": "Fresh Powder, No Footprints — Snowy Forest",
@@ -196,7 +212,8 @@
     "description": "Fresh snow blankets a pine forest, the mountains beyond fading into a soft winter overcast.",
     "location": "Colorado",
     "year": 2024,
-    "order": 57
+    "order": 57,
+    "alt": "A snow-covered pine forest under a partly cloudy mountain sky."
   },
   "autumn-maple-road.jpg": {
     "title": "The Road Turns Red — Autumn Maples",
@@ -206,7 +223,8 @@
     ],
     "description": "A quiet road curves beneath a corridor of maples at the peak of autumn, the asphalt strewn with fallen red leaves.",
     "year": 2024,
-    "order": 56
+    "order": 56,
+    "alt": "A residential street lined with bright red maple trees, fallen leaves covering the road and sidewalk."
   },
   "boulder-flatirons-winter-bw.jpg": {
     "title": "Snow Day Beneath the Flatirons — Boulder",
@@ -218,7 +236,8 @@
     "description": "Snow settles over a building beneath Boulder's Flatirons, the range dissolving into cloud in this quiet monochrome.",
     "location": "Boulder, Colorado",
     "year": 2025,
-    "order": 58
+    "order": 58,
+    "alt": "A stone building dusted with snow beneath the Flatirons mountains, in black and white."
   },
   "gerenuk-portrait.jpg": {
     "title": "The Long-Necked One — Gerenuk",
@@ -226,7 +245,8 @@
       "Wildlife"
     ],
     "description": "A gerenuk turns its slender neck toward the light, the antelope’s delicate features emerging from deep shadow.",
-    "order": 40
+    "order": 40,
+    "alt": "A gerenuk antelope's slender neck and face, ears alert, against a dark background."
   },
   "los-angeles-skyline-night-bw.jpg": {
     "title": "City of Angels After Dark — Los Angeles",
@@ -237,7 +257,8 @@
     ],
     "description": "The lights of downtown Los Angeles stretch to the horizon in a sweeping black-and-white night panorama.",
     "location": "Los Angeles, California",
-    "order": 53
+    "order": 53,
+    "alt": "The Los Angeles skyline lit up at night, wide panoramic view in black and white."
   },
   "sea-nettle-jellyfish.jpg": {
     "title": "Grace on the Drift — Sea Nettle",
@@ -245,7 +266,8 @@
       "Marine Life"
     ],
     "description": "A sea nettle drifts through deep blue water, trailing lace-like tentacles behind its glowing bell.",
-    "order": 28
+    "order": 28,
+    "alt": "A sea nettle jellyfish with long trailing tentacles drifting in dark blue water."
   },
   "jellyfish-blue-water.jpg": {
     "title": "Floating in the Deep Blue — Jellyfish",
@@ -253,7 +275,8 @@
       "Marine Life"
     ],
     "description": "Suspended in electric blue, a jellyfish pulses gently through the dark, backlit like stained glass.",
-    "order": 29
+    "order": 29,
+    "alt": "A translucent jellyfish with a red-striped bell drifting through deep blue water."
   },
   "jellyfish-glowing.jpg": {
     "title": "Lit From Within — Jellyfish",
@@ -261,7 +284,8 @@
       "Marine Life"
     ],
     "description": "A jellyfish glows from within against a field of cobalt, its striped bell impossibly delicate.",
-    "order": 18
+    "order": 18,
+    "alt": "A jellyfish glowing white and orange against a deep blue background, tentacles flowing above it."
   },
   "jellyfish-drifting.jpg": {
     "title": "Going With the Flow — Jellyfish",
@@ -269,7 +293,8 @@
       "Marine Life"
     ],
     "description": "Tentacles streaming, a jellyfish drifts weightless through the aquarium’s blue dark.",
-    "order": 30
+    "order": 30,
+    "alt": "A jellyfish's tentacles trailing upward as it drifts through vivid blue water."
   },
   "full-moon.jpg": {
     "title": "Say Cheese, Moon — Full Moon",
@@ -278,7 +303,8 @@
       "Black & White"
     ],
     "description": "The full moon hangs in a black sky, every crater and mare rendered in crisp monochrome detail.",
-    "order": 45
+    "order": 45,
+    "alt": "A close-up of the full moon, showing its cratered surface against a black sky."
   },
   "pfeiffer-beach-arch-sunset.jpg": {
     "title": "Purple Sand, Golden Rock — Pfeiffer Beach",
@@ -292,7 +318,8 @@
     "location": "Big Sur, California",
     "order": 8,
     "featured": true,
-    "featuredOrder": 11
+    "featuredOrder": 11,
+    "alt": "A sea arch at Pfeiffer Beach glowing gold at sunset, waves washing onto purple sand."
   },
   "yosemite-falls.jpg": {
     "title": "The Long Drop — Yosemite Falls",
@@ -302,7 +329,8 @@
     ],
     "description": "Yosemite Falls tumbles down the granite in a long white ribbon, framed by green summer forest.",
     "location": "Yosemite National Park, California",
-    "order": 46
+    "order": 46,
+    "alt": "Yosemite Falls cascading down a granite cliff face, green trees in the foreground."
   },
   "dream-lake-stargazing-night.jpg": {
     "title": "Just Me and a Billion Stars — Dream Lake",
@@ -315,7 +343,8 @@
     "location": "Rocky Mountain National Park, Colorado",
     "order": 4,
     "featured": true,
-    "featuredOrder": 6
+    "featuredOrder": 6,
+    "alt": "A person sitting on rocks beside Dream Lake, gazing up at a star-filled, aurora-tinted sky."
   },
   "delicate-arch-sunburst.jpg": {
     "title": "Catching the Sun — Delicate Arch",
@@ -325,7 +354,8 @@
     ],
     "description": "The midday sun bursts over Delicate Arch, flaring across the red-rock bowl of Arches National Park.",
     "location": "Arches National Park, Utah",
-    "order": 21
+    "order": 21,
+    "alt": "Delicate Arch with the sun peeking above the horizon, lens flare and desert mesas beyond."
   },
   "delicate-arch-backlit-sunstar.jpg": {
     "title": "Backlit and Blazing — Delicate Arch",
@@ -335,7 +365,8 @@
     ],
     "description": "Backlit by a low sun, Delicate Arch becomes a silhouette while a sharp sunstar bursts along its edge.",
     "location": "Arches National Park, Utah",
-    "order": 13
+    "order": 13,
+    "alt": "Delicate Arch silhouetted against a bright sunburst breaking through the blue sky."
   },
   "delicate-arch-la-sal-mountains.jpg": {
     "title": "Framing the La Sals — Delicate Arch",
@@ -346,7 +377,8 @@
     ],
     "description": "Delicate Arch frames the snow-capped La Sal Mountains, red sandstone meeting distant white peaks.",
     "location": "Arches National Park, Utah",
-    "order": 20
+    "order": 20,
+    "alt": "Delicate Arch framed against the snow-covered La Sal Mountains under a pale sky."
   },
   "delicate-arch-sunset.jpg": {
     "title": "Nature's Doorway at Golden Hour — Delicate Arch",
@@ -359,7 +391,8 @@
     "location": "Arches National Park, Utah",
     "order": 2,
     "featured": true,
-    "featuredOrder": 2
+    "featuredOrder": 2,
+    "alt": "Delicate Arch glowing orange at sunset, snow-capped mountains and desert layers behind it."
   },
   "mesa-arch-canyonlands.jpg": {
     "title": "A Window on Canyon Country — Mesa Arch",
@@ -371,7 +404,8 @@
     "location": "Canyonlands National Park, Utah",
     "order": 12,
     "featured": true,
-    "featuredOrder": 8
+    "featuredOrder": 8,
+    "alt": "Mesa Arch framing a distant canyon view in Canyonlands National Park under a cloudy sky."
   },
   "canyonlands-overlook-panorama.jpg": {
     "title": "As Far as the Eye Can See — Canyonlands",
@@ -381,7 +415,8 @@
     ],
     "description": "A sweeping panorama over Canyonlands, endless mesas and carved washes receding to the horizon.",
     "location": "Canyonlands National Park, Utah",
-    "order": 44
+    "order": 44,
+    "alt": "A sweeping panorama of red rock mesas and canyons stretching to the horizon at Canyonlands."
   },
   "elk-bw.jpg": {
     "title": "Young and Watchful — Elk",
@@ -390,7 +425,8 @@
       "Black & White"
     ],
     "description": "A young elk pauses at the forest edge, its portrait rendered in soft black and white.",
-    "order": 41
+    "order": 41,
+    "alt": "A young elk with small antlers looking back over its shoulder in a grassy field, in black and white."
   },
   "stellers-jay.jpg": {
     "title": "Bad Hair, Don't Care — Steller's Jay",
@@ -399,7 +435,8 @@
       "Birds"
     ],
     "description": "A Steller’s jay shows off its crest and electric-blue plumage against a muted forest floor.",
-    "order": 39
+    "order": 39,
+    "alt": "A Steller's jay with a tall black crest and blue body, standing on the forest floor."
   },
   "grand-teton-milky-way-panorama.jpg": {
     "title": "The Galaxy Over the Tetons — Milky Way",
@@ -411,7 +448,8 @@
     ],
     "description": "The Milky Way arcs over the jagged Teton range in a wide night panorama above the sagebrush flats.",
     "location": "Grand Teton National Park, Wyoming",
-    "order": 3
+    "order": 3,
+    "alt": "The Milky Way arching over the jagged peaks of the Grand Tetons at night."
   },
   "suv-under-the-stars.jpg": {
     "title": "Parked Beneath the Cosmos — Road Trip",
@@ -421,7 +459,8 @@
     ],
     "description": "A car rests beneath a sky thick with stars, mountains lining the horizon on a quiet road-trip night.",
     "location": "Grand Teton National Park, Wyoming",
-    "order": 63
+    "order": 63,
+    "alt": "An SUV parked on a road beneath a star-filled sky with the Milky Way visible."
   },
   "moose-portrait.jpg": {
     "title": "The Gentle Giant — Moose",
@@ -429,7 +468,8 @@
       "Wildlife"
     ],
     "description": "A young moose emerges from the dark timber, ears forward, caught in a shaft of forest light.",
-    "order": 26
+    "order": 26,
+    "alt": "A moose's head and shoulders in profile against a dark forest background."
   },
   "grizzly-bear-brush.jpg": {
     "title": "Just Bearly Hidden — Grizzly",
@@ -437,7 +477,8 @@
       "Wildlife"
     ],
     "description": "A grizzly moves through a hillside of green brush, glancing back toward the camera.",
-    "order": 24
+    "order": 24,
+    "alt": "A grizzly bear walking through green brush and wildflowers on a hillside."
   },
   "grand-teton-sunset.jpg": {
     "title": "The Sky Caught Fire — Grand Teton",
@@ -449,7 +490,8 @@
     "location": "Grand Teton National Park, Wyoming",
     "order": 14,
     "featured": true,
-    "featuredOrder": 4
+    "featuredOrder": 4,
+    "alt": "The Grand Teton mountain range silhouetted beneath a fiery orange and pink sunset sky."
   },
   "grizzly-bear-bw.jpg": {
     "title": "Fresh Out of the Water — Grizzly",
@@ -458,7 +500,8 @@
       "Black & White"
     ],
     "description": "A grizzly lifts its head streaming with water, droplets frozen against the dark in stark black and white.",
-    "order": 42
+    "order": 42,
+    "alt": "A wet grizzly bear shaking off water, close-up profile, in black and white."
   },
   "ground-squirrel-bw.jpg": {
     "title": "Do Not Disturb — Ground Squirrel",
@@ -467,7 +510,8 @@
       "Black & White"
     ],
     "description": "A ground squirrel curls up for a nap among the rocks — a small, quiet moment in monochrome.",
-    "order": 43
+    "order": 43,
+    "alt": "A ground squirrel curled up asleep among rocks, in black and white."
   },
   "gray-wolf-resting-bw.jpg": {
     "title": "Keeping One Eye Open — Gray Wolf",
@@ -476,7 +520,8 @@
       "Black & White"
     ],
     "description": "A gray wolf rests in the grass, one eye open and watchful, in a quiet black-and-white study.",
-    "order": 32
+    "order": 32,
+    "alt": "A gray wolf resting on the ground with alert eyes open, in black and white."
   },
   "wolf-howling-bw.jpg": {
     "title": "Someone Order a Solo? — Howling Wolf",
@@ -485,7 +530,8 @@
       "Black & White"
     ],
     "description": "A wolf lifts its muzzle to howl, rim-lit against a black forest in dramatic monochrome.",
-    "order": 31
+    "order": 31,
+    "alt": "A wolf standing in profile, howling with its head tilted back, in black and white."
   },
   "wolf-eye-closeup.jpg": {
     "title": "Here's Looking at You — Gray Wolf",
@@ -495,7 +541,8 @@
     "description": "A single amber eye burns out of a wolf’s gray face, the rest of the frame drained to black and white.",
     "order": 15,
     "featured": true,
-    "featuredOrder": 1
+    "featuredOrder": 1,
+    "alt": "Extreme close-up of a gray wolf's amber eye and surrounding fur, in black and white with the eye in natural color."
   },
   "wolf-eyes-closeup.jpg": {
     "title": "Windows to the Wild — Wolf Eyes",
@@ -503,7 +550,8 @@
       "Wildlife"
     ],
     "description": "The unblinking amber eyes of a wolf hold the frame, every hair rendered sharp against soft shadow.",
-    "order": 36
+    "order": 36,
+    "alt": "Close-up of a wolf's face, focusing on both amber eyes, in black and white."
   },
   "two-wolves-in-grass.jpg": {
     "title": "Partners in Crime — Wolf Pair",
@@ -511,7 +559,8 @@
       "Wildlife"
     ],
     "description": "Two wolves move together through spring grass, one snarling playfully at the other.",
-    "order": 23
+    "order": 23,
+    "alt": "Two gray wolves standing together in tall grass near pine branches."
   },
   "two-wolves-walking.jpg": {
     "title": "The Morning Patrol — Wolf Pair",
@@ -519,7 +568,8 @@
       "Wildlife"
     ],
     "description": "A pair of wolves stride toward the camera in step — the morning patrol of the pack.",
-    "order": 22
+    "order": 22,
+    "alt": "Two gray wolves walking side by side across a grassy field."
   },
   "bald-eagle-pair.jpg": {
     "title": "Two Birds, One Camera — Bald Eagles",
@@ -528,7 +578,8 @@
       "Birds"
     ],
     "description": "Two bald eagles lean close against the dark rock, one staring straight down the lens.",
-    "order": 25
+    "order": 25,
+    "alt": "Two bald eagles perched close together against dark rocks, one facing forward and one in profile."
   },
   "rainbow-trout-portrait.jpg": {
     "title": "Scales Like Stained Glass — Rainbow Trout",
@@ -537,7 +588,8 @@
       "Marine Life"
     ],
     "description": "A rainbow trout’s head fills the frame, its scales shimmering like wet stained glass.",
-    "order": 38
+    "order": 38,
+    "alt": "Close-up of a rainbow trout's head, showing its iridescent pink and green scales."
   },
   "bison-grazing.jpg": {
     "title": "Lawn Care, Yellowstone Edition — Bison",
@@ -546,7 +598,8 @@
     ],
     "description": "A bison lowers its massive head to graze, backlit fur catching the light in Yellowstone’s meadows.",
     "location": "Yellowstone National Park, Wyoming",
-    "order": 37
+    "order": 37,
+    "alt": "Close-up of a bison grazing on grass, showing its head, horn, and shaggy fur."
   },
   "grand-prismatic-spring-panorama.jpg": {
     "title": "Earth's Own Rainbow — Grand Prismatic Spring",
@@ -557,7 +610,8 @@
     ],
     "description": "Yellowstone’s Grand Prismatic Spring blooms in impossible color, rings of orange and blue radiating from its steaming center.",
     "location": "Yellowstone National Park, Wyoming",
-    "order": 1
+    "order": 1,
+    "alt": "Aerial panorama of Grand Prismatic Spring, showing its rainbow-colored mineral rings."
   },
   "aurora-over-neighborhood.jpg": {
     "title": "The Sky Put On a Show — Aurora",
@@ -567,7 +621,8 @@
     ],
     "description": "A rare aurora ripples pink and green over a Colorado neighborhood, the night sky briefly turned electric.",
     "location": "Colorado",
-    "order": 19
+    "order": 19,
+    "alt": "Purple and green aurora borealis lighting up the night sky above a suburban neighborhood."
   },
   "aurora-borealis-colorado.jpg": {
     "title": "Northern Lights, Down South — Aurora over Colorado",
@@ -579,7 +634,8 @@
     "location": "Colorado",
     "order": 5,
     "featured": true,
-    "featuredOrder": 7
+    "featuredOrder": 7,
+    "alt": "Vivid pink and green aurora borealis glowing over a row of houses under a starry sky."
   },
   "gray-wolf-walking-bw.jpg": {
     "title": "On the Prowl — Gray Wolf",
@@ -588,7 +644,8 @@
       "Black & White"
     ],
     "description": "A gray wolf pads through shadow, head low and eyes fixed, in moody black and white.",
-    "order": 33
+    "order": 33,
+    "alt": "A gray wolf walking forward through shadowed brush, in black and white."
   },
   "wolf-snarling.jpg": {
     "title": "Not in the Mood — Snarling Wolf",
@@ -596,7 +653,8 @@
       "Wildlife"
     ],
     "description": "A wolf curls its lip in a snarl, a single amber eye and pink tongue breaking through the monochrome.",
-    "order": 16
+    "order": 16,
+    "alt": "A wolf snarling with bared teeth, close-up profile in black and white with an amber eye."
   },
   "white-wolf-portrait.jpg": {
     "title": "Eyes of Amber — White Wolf",
@@ -606,7 +664,8 @@
     "description": "A white wolf meets the camera with calm amber eyes, its pale fur glowing against the dark.",
     "order": 6,
     "featured": true,
-    "featuredOrder": 5
+    "featuredOrder": 5,
+    "alt": "A close-up portrait of a white wolf with amber eyes, in black and white."
   },
   "wolf-baring-teeth.jpg": {
     "title": "All Teeth, No Bluff — Wolf",
@@ -614,7 +673,8 @@
       "Wildlife"
     ],
     "description": "A wolf bares its teeth in warning, the flash of fang and tongue set against silver-gray fur.",
-    "order": 17
+    "order": 17,
+    "alt": "A wolf baring its teeth, close-up of its snarling face in black and white with amber eyes."
   },
   "wolf-portrait-bw.jpg": {
     "title": "The Quiet Stare — Wolf",
@@ -623,7 +683,8 @@
       "Black & White"
     ],
     "description": "A wolf holds a quiet, steady gaze, its portrait soft and grainy in black and white.",
-    "order": 35
+    "order": 35,
+    "alt": "A wolf walking toward the camera with a direct gaze, in black and white."
   },
   "wolf-in-snowfall.jpg": {
     "title": "First Snow of the Season — Wolf",
@@ -632,7 +693,8 @@
       "Winter"
     ],
     "description": "A wolf watches through falling snow, flakes catching in its thick winter coat.",
-    "order": 34
+    "order": 34,
+    "alt": "A wolf's face in falling snow, ears perked, in black and white."
   },
   "mountain-forest-waterfall.jpg": {
     "title": "Where the Mountain Spills Over — Waterfall",
@@ -642,7 +704,8 @@
     ],
     "description": "A mountain stream spills over granite steps through evergreen forest, water blurred to silk by a long exposure.",
     "location": "Rocky Mountain National Park, Colorado",
-    "order": 54
+    "order": 54,
+    "alt": "A waterfall cascading over boulders through a pine forest in the mountains."
   },
   "pelican-in-flight.jpg": {
     "title": "Riding the Golden Light — Pelican",
@@ -652,6 +715,7 @@
       "Golden Hour"
     ],
     "description": "A pelican banks through warm, hazy light, wings spread wide against a glowing sky.",
-    "order": 27
+    "order": 27,
+    "alt": "A pelican in flight with wings fully spread, backlit by golden light."
   }
 }

@@ -15,6 +15,25 @@ const description = photo.description || site.description;
 const galleryUrl = `${base}?photo=${encodeURIComponent(photo.path)}`;
 const canonicalUrl = Astro.site ? new URL(`${base}photo/${photo.slug}/`, Astro.site).href : `${base}photo/${photo.slug}/`;
 const ogImageUrl = Astro.site ? new URL(photo.ogImageSrc, Astro.site).href : photo.ogImageSrc;
+const contentUrl = Astro.site ? new URL(photo.originalSrc, Astro.site).href : photo.originalSrc;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ImageObject',
+  name: photo.title,
+  description,
+  contentUrl,
+  thumbnailUrl: ogImageUrl,
+  url: canonicalUrl,
+  ...(photo.width ? { width: photo.width } : {}),
+  ...(photo.height ? { height: photo.height } : {}),
+  creator: { '@type': 'Person', name: 'Chahat Singh' },
+  creditText: 'Chahat Singh',
+  copyrightNotice: 'Chahat Singh',
+  ...(photo.year ? { datePublished: String(photo.year) } : {}),
+  ...(photo.location ? { contentLocation: { '@type': 'Place', name: photo.location } } : {}),
+};
+const jsonLdString = JSON.stringify(jsonLd).replace(/</g, '\\u003c');
 ---
 <!doctype html>
 <html lang="en">
@@ -39,7 +58,15 @@ const ogImageUrl = Astro.site ? new URL(photo.ogImageSrc, Astro.site).href : pho
   <meta name="twitter:image" content={ogImageUrl} />
 
   <link rel="icon" type="image/png" sizes="32x32" href={`${base}assets/favicon-32.png`} />
+  <script type="application/ld+json" set:html={jsonLdString}></script>
 
+  <!--
+    No analytics beacon on this page: it redirects in well under the time an
+    async/deferred script needs to load and fire, so a beacon here would
+    rarely get a chance to record anything. The homepage's beacon records
+    the visit instead, once the redirect below lands there with ?photo=
+    still in the URL.
+  -->
   <!--
     This page exists purely so link-preview crawlers (which fetch plain HTML
     and never run JavaScript) see this exact photo's own title/description/

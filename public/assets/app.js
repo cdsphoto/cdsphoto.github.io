@@ -1,0 +1,514 @@
+(() => {
+  'use strict';
+
+  const DATA = window.CDS_PHOTO_DATA || { photos: [], settings: {} };
+  const rawPhotos = Array.isArray(DATA.photos) ? DATA.photos : [];
+  const settings = DATA.settings || {};
+  const HERO_INTERVAL = Math.max(3500, Number(settings.heroInterval) || 7000);
+  const BATCH_SIZE = Math.max(12, Number(settings.galleryBatchSize) || 36);
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const $ = (selector, context = document) => context.querySelector(selector);
+  const $$ = (selector, context = document) => [...context.querySelectorAll(selector)];
+
+  const html = document.documentElement;
+  const header = $('.site-header');
+  const themeToggle = $('.theme-toggle');
+  const galleryGrid = $('.gallery-grid');
+  const filterRow = $('.filter-row');
+  const galleryCount = $('.gallery-count');
+  const galleryEmpty = $('.gallery-empty');
+  const showMoreWrap = $('.show-more-wrap');
+  const showMoreButton = $('.show-more');
+
+  const hero = $('.hero');
+  const heroStage = $('.hero-stage');
+  const heroEmpty = $('.hero-empty');
+  const heroFrames = [$('.hero-frame-a'), $('.hero-frame-b')];
+  const heroMeta = $('.hero-photo-meta');
+  const heroTitle = $('.hero-photo-title');
+  const heroDetail = $('.hero-photo-detail');
+  const heroTags = $('.hero-photo-tags');
+  const heroCurrent = $('.hero-current');
+  const heroTotal = $('.hero-total');
+  const heroPrev = $('.hero-prev');
+  const heroNext = $('.hero-next');
+  const heroPause = $('.hero-pause');
+  const heroProgress = $('.hero-progress span');
+
+  const lightbox = $('.lightbox');
+  const lightboxImage = $('.lightbox-image');
+  const lightboxTitle = $('.lightbox-title');
+  const lightboxDescription = $('.lightbox-description');
+  const lightboxDetail = $('.lightbox-detail');
+  const lightboxTechnical = $('.lightbox-technical');
+  const lightboxTags = $('.lightbox-tags');
+  const lightboxCounter = $('.lightbox-counter');
+  const lightboxPrev = $('.lightbox-prev');
+  const lightboxNext = $('.lightbox-next');
+
+  let activeTags = new Set();
+  let visibleCount = BATCH_SIZE;
+  let filteredPhotos = [];
+  let lightboxIndex = 0;
+  let featuredPhotos = [];
+  let heroIndex = 0;
+  let activeFrame = 0;
+  let heroTimer = null;
+  let heroPaused = false;
+  let heroTouchStartX = null;
+  let lightboxLoadToken = 0;
+
+  const photos = rawPhotos.filter(photo => photo && photo.previewSrc).map((photo, index) => ({
+    id: index,
+    previewSrc: photo.previewSrc,
+    previewSrcSet: photo.previewSrcSet || '',
+    heroSrc: photo.heroSrc || photo.previewSrc,
+    heroMobileSrc: photo.heroMobileSrc || photo.heroSrc || photo.previewSrc,
+    originalSrc: photo.originalSrc || photo.previewSrc,
+    path: photo.path || photo.previewSrc,
+    width: Number(photo.width) || 0,
+    height: Number(photo.height) || 0,
+    format: photo.format || '',
+    aspectRatio: Number(photo.aspectRatio) || 1,
+    shape: photo.shape || 'standard',
+    technicalLabel: photo.technicalLabel || '',
+    title: photo.title || 'Untitled',
+    alt: photo.alt || `${photo.title || 'Untitled'} photograph`,
+    location: photo.location || '',
+    year: photo.year || '',
+    date: photo.date || '',
+    description: photo.description || '',
+    tags: Array.isArray(photo.tags) ? photo.tags : [],
+    featured: photo.featured === true,
+    featuredOrder: Number(photo.featuredOrder) || 999999,
+  }));
+
+  function detailLine(photo) {
+    const bits = [];
+    if (photo.location) bits.push(photo.location);
+    if (photo.year) bits.push(photo.year);
+    return bits.join(' · ');
+  }
+
+  function technicalLine(photo) {
+    const bits = [];
+    if (photo.width && photo.height) bits.push(`${photo.width} × ${photo.height}`);
+    if (photo.technicalLabel) bits.push(photo.technicalLabel);
+    if (photo.format) bits.push(String(photo.format).toUpperCase());
+    return bits.join(' · ');
+  }
+
+  function pad(number) { return String(number).padStart(2, '0'); }
+
+  function resolveTheme() {
+    const explicit = html.dataset.theme;
+    const isDark = explicit === 'dark' || (explicit === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    html.dataset.resolvedTheme = isDark ? 'dark' : 'light';
+    themeToggle?.setAttribute('aria-label', `Switch to ${isDark ? 'light' : 'dark'} mode`);
+    themeToggle?.setAttribute('title', `Switch to ${isDark ? 'light' : 'dark'} mode`);
+  }
+
+  function setTheme(theme) {
+    html.dataset.theme = theme;
+    try { localStorage.setItem('cds-photo-theme', theme); } catch (_) {}
+    resolveTheme();
+  }
+
+  function setupTheme() {
+    resolveTheme();
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', resolveTheme);
+    themeToggle?.addEventListener('click', () => setTheme(html.dataset.resolvedTheme === 'dark' ? 'light' : 'dark'));
+  }
+
+  function setupHeader() {
+    const updateHeader = () => header?.classList.toggle('is-scrolled', window.scrollY > 24);
+    updateHeader();
+    window.addEventListener('scroll', updateHeader, { passive: true });
+  }
+
+  function allTags() {
+    return [...new Set(photos.flatMap(photo => photo.tags))].sort((a, b) => a.localeCompare(b));
+  }
+
+  function renderFilters() {
+    if (!filterRow) return;
+    const tags = allTags();
+    tags.forEach(tag => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'filter-chip';
+      button.dataset.filter = tag;
+      button.setAttribute('aria-pressed', 'false');
+      button.textContent = tag;
+      filterRow.appendChild(button);
+    });
+    if (photos.some(photo => photo.tags.length === 0)) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'filter-chip filter-chip-warning';
+      button.dataset.filter = '__untagged__';
+      button.setAttribute('aria-pressed', 'false');
+      button.textContent = 'Untagged';
+      filterRow.appendChild(button);
+    }
+
+    filterRow.addEventListener('click', event => {
+      const button = event.target.closest('[data-filter]');
+      if (!button) return;
+      const filter = button.dataset.filter;
+      if (filter === 'all') {
+        activeTags.clear();
+      } else if (activeTags.has(filter)) {
+        activeTags.delete(filter);
+      } else {
+        activeTags.add(filter);
+      }
+      visibleCount = BATCH_SIZE;
+      syncFilterButtons();
+      renderGallery();
+    });
+  }
+
+  function syncFilterButtons() {
+    $$('.filter-chip', filterRow).forEach(chip => {
+      const filter = chip.dataset.filter;
+      const active = filter === 'all' ? activeTags.size === 0 : activeTags.has(filter);
+      chip.classList.toggle('is-active', active);
+      chip.setAttribute('aria-pressed', String(active));
+    });
+  }
+
+  function matchesActiveTags(photo) {
+    if (activeTags.size === 0) return true;
+    for (const tag of activeTags) {
+      if (tag === '__untagged__') {
+        if (photo.tags.length !== 0) return false;
+      } else if (!photo.tags.includes(tag)) return false;
+    }
+    return true;
+  }
+
+  function createTagPill(tag) {
+    const span = document.createElement('span');
+    span.className = 'photo-tag';
+    span.textContent = tag;
+    return span;
+  }
+
+  function createGalleryCard(photo, indexInFilter) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `gallery-card gallery-card-${photo.shape}`;
+    button.dataset.photoIndex = String(indexInFilter);
+    button.setAttribute('aria-label', `Open ${photo.title}`);
+    button.style.setProperty('--photo-ratio', String(photo.aspectRatio || 1));
+
+    const imageWrap = document.createElement('span');
+    imageWrap.className = 'gallery-image-wrap';
+    const img = document.createElement('img');
+    // Loading-affecting attributes are set before src/srcset so the very first
+    // fetch already honors them, rather than possibly starting under the
+    // default "auto" priority and racing a later loading/fetchPriority change.
+    img.loading = indexInFilter < 2 ? 'eager' : 'lazy';
+    img.decoding = 'async';
+    if (indexInFilter < 2) img.fetchPriority = 'high';
+    img.alt = photo.alt;
+    if (photo.width) img.width = photo.width;
+    if (photo.height) img.height = photo.height;
+    img.sizes = '(max-width: 620px) 100vw, (max-width: 980px) 60vw, 42vw';
+    if (photo.previewSrcSet) img.srcset = photo.previewSrcSet;
+    img.src = photo.previewSrc;
+
+    // Recovery for a rare "phantom complete" state some browsers can hit under
+    // many concurrent eager/high-priority requests: the element reports
+    // complete=true with naturalWidth=0 and never fires `error`, so neither a
+    // normal load nor error handler alone can catch it. A query-string cache
+    // bust on the same path is not safe to assume here, so recovery goes
+    // through fetch()->blob() instead, bypassing the <img> loading state
+    // machine (and its srcset/sizes candidate selection) entirely.
+    const recover = () => {
+      if (img.dataset.retried) return;
+      img.dataset.retried = '1';
+      fetch(photo.previewSrc)
+        .then((response) => (response.ok ? response.blob() : Promise.reject()))
+        .then((blob) => {
+          const objectUrl = URL.createObjectURL(blob);
+          img.removeAttribute('srcset');
+          img.removeAttribute('sizes');
+          img.addEventListener('load', () => {
+            img.classList.add('is-loaded');
+            URL.revokeObjectURL(objectUrl);
+          }, { once: true });
+          img.src = objectUrl;
+        })
+        .catch(() => {});
+    };
+    img.addEventListener('load', () => {
+      if (img.naturalWidth > 0) img.classList.add('is-loaded'); else recover();
+    }, { once: true });
+    img.addEventListener('error', recover, { once: true });
+    if (img.complete) {
+      if (img.naturalWidth > 0) img.classList.add('is-loaded'); else recover();
+    } else if (img.loading === 'eager') {
+      // Safety net: eager images should resolve almost immediately. If one is
+      // still stuck in the phantom state a couple seconds later, repair it.
+      window.setTimeout(() => { if (img.complete && img.naturalWidth === 0) recover(); }, 2500);
+    }
+    imageWrap.appendChild(img);
+
+    const meta = document.createElement('span');
+    meta.className = 'gallery-card-meta';
+    const top = document.createElement('span');
+    const title = document.createElement('span');
+    title.className = 'gallery-card-title';
+    title.textContent = photo.title;
+    const detail = document.createElement('span');
+    detail.className = 'gallery-card-detail';
+    detail.textContent = detailLine(photo);
+    const tags = document.createElement('span');
+    tags.className = 'gallery-card-tags';
+    (photo.tags.length ? photo.tags.slice(0, 3) : ['Untagged']).forEach(tag => tags.appendChild(createTagPill(tag)));
+    top.append(title, detail);
+    meta.append(top, tags);
+    button.append(imageWrap, meta);
+    return button;
+  }
+
+  function renderGallery() {
+    if (!galleryGrid) return;
+    filteredPhotos = photos.filter(matchesActiveTags);
+    const toRender = filteredPhotos.slice(0, visibleCount);
+    galleryGrid.replaceChildren(...toRender.map(createGalleryCard));
+    if (galleryCount) galleryCount.textContent = `${filteredPhotos.length} ${filteredPhotos.length === 1 ? 'photograph' : 'photographs'}`;
+    if (galleryEmpty) galleryEmpty.hidden = filteredPhotos.length !== 0;
+    if (showMoreWrap) showMoreWrap.hidden = visibleCount >= filteredPhotos.length;
+  }
+
+  function setupGallery() {
+    renderFilters();
+    renderGallery();
+    galleryGrid?.addEventListener('click', event => {
+      const card = event.target.closest('.gallery-card');
+      if (card) openLightbox(Number(card.dataset.photoIndex) || 0);
+    });
+    showMoreButton?.addEventListener('click', () => { visibleCount += BATCH_SIZE; renderGallery(); });
+  }
+
+  function preload(src, srcSet = '') { if (src) { const image = new Image(); image.src = src; if (srcSet) { image.srcset = srcSet; image.sizes = '100vw'; } } }
+
+  // Extra-wide photographs (panorama / 32:9 ultrawide) letterbox badly in the
+  // full-screen hero — especially on phones — so they never enter the rotation,
+  // even if flagged featured in photos.json.
+  const HERO_MAX_RATIO = 1.8;
+  const isHeroEligible = photo => (Number(photo.aspectRatio) || 1) < HERO_MAX_RATIO;
+
+  function getFeaturedPhotos() {
+    const marked = photos
+      .filter(photo => photo.featured && isHeroEligible(photo))
+      .sort((a, b) => a.featuredOrder - b.featuredOrder || a.path.localeCompare(b.path));
+    if (marked.length) return marked;
+    return photos.filter(isHeroEligible).slice(0, Math.min(8, photos.length));
+  }
+
+  function restartHeroProgress() {
+    if (!heroProgress) return;
+    heroProgress.classList.remove('is-running');
+    heroProgress.style.setProperty('--hero-progress-duration', `${HERO_INTERVAL}ms`);
+    void heroProgress.offsetWidth;
+    if (!heroPaused && !reducedMotion.matches) heroProgress.classList.add('is-running');
+  }
+
+  function scheduleHero() {
+    window.clearTimeout(heroTimer);
+    restartHeroProgress();
+    if (!heroPaused && !reducedMotion.matches && featuredPhotos.length >= 2) heroTimer = window.setTimeout(() => showHero(heroIndex + 1), HERO_INTERVAL);
+  }
+
+  function setHeroPaused(paused) {
+    heroPaused = paused;
+    heroPause?.classList.toggle('is-paused', paused);
+    heroPause?.setAttribute('aria-label', paused ? 'Resume featured slideshow' : 'Pause featured slideshow');
+    if (paused) { window.clearTimeout(heroTimer); heroProgress?.classList.remove('is-running'); } else scheduleHero();
+  }
+
+  function renderTagContainer(container, tags, limit = Infinity) {
+    if (!container) return;
+    container.replaceChildren(...tags.slice(0, limit).map(createTagPill));
+  }
+
+  function showHero(nextIndex, immediate = false) {
+    if (!featuredPhotos.length || !heroStage) return;
+    heroIndex = (nextIndex + featuredPhotos.length) % featuredPhotos.length;
+    const photo = featuredPhotos[heroIndex];
+    const nextFrameIndex = immediate ? activeFrame : 1 - activeFrame;
+    const nextFrame = heroFrames[nextFrameIndex];
+    const previousFrame = heroFrames[activeFrame];
+    if (!nextFrame) return;
+    const heroImage = window.matchMedia('(max-width: 700px)').matches ? photo.heroMobileSrc : photo.heroSrc;
+    const escaped = String(heroImage || photo.previewSrc).replace(/"/g, '%22');
+    nextFrame.style.setProperty('--hero-image', `url("${escaped}")`);
+    nextFrame.style.setProperty('--hero-drift-duration', `${HERO_INTERVAL + 1800}ms`);
+    heroMeta?.classList.add('is-changing');
+    const finish = () => {
+      previousFrame?.classList.remove('is-active');
+      nextFrame.classList.add('is-active');
+      activeFrame = nextFrameIndex;
+      if (heroTitle) heroTitle.textContent = photo.title;
+      if (heroDetail) heroDetail.textContent = detailLine(photo);
+      renderTagContainer(heroTags, photo.tags, 4);
+      if (heroCurrent) heroCurrent.textContent = pad(heroIndex + 1);
+      if (heroTotal) heroTotal.textContent = pad(featuredPhotos.length);
+      heroMeta?.classList.remove('is-changing');
+      {
+        const nextPhoto = featuredPhotos[(heroIndex + 1) % featuredPhotos.length];
+        if (nextPhoto) preload(window.matchMedia('(max-width: 700px)').matches ? nextPhoto.heroMobileSrc : nextPhoto.heroSrc);
+      }
+      scheduleHero();
+    };
+    if (immediate) finish(); else window.setTimeout(finish, 150);
+  }
+
+  function setupHero() {
+    featuredPhotos = getFeaturedPhotos();
+    if (!featuredPhotos.length) {
+      if (heroEmpty) heroEmpty.hidden = false;
+      if (heroStage) heroStage.hidden = true;
+      $('.hero-content')?.setAttribute('hidden', '');
+      $('.hero-progress')?.setAttribute('hidden', '');
+      return;
+    }
+    if (heroTotal) heroTotal.textContent = pad(featuredPhotos.length);
+    if (featuredPhotos.length < 2) { heroPrev?.setAttribute('hidden', ''); heroNext?.setAttribute('hidden', ''); heroPause?.setAttribute('hidden', ''); }
+    showHero(0, true);
+    heroPrev?.addEventListener('click', () => showHero(heroIndex - 1));
+    heroNext?.addEventListener('click', () => showHero(heroIndex + 1));
+    heroPause?.addEventListener('click', () => setHeroPaused(!heroPaused));
+    hero?.addEventListener('touchstart', event => { heroTouchStartX = event.changedTouches[0]?.clientX ?? null; }, { passive: true });
+    hero?.addEventListener('touchend', event => {
+      if (heroTouchStartX == null) return;
+      const endX = event.changedTouches[0]?.clientX ?? heroTouchStartX;
+      const delta = endX - heroTouchStartX;
+      heroTouchStartX = null;
+      if (Math.abs(delta) >= 50) showHero(heroIndex + (delta < 0 ? 1 : -1));
+    }, { passive: true });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { window.clearTimeout(heroTimer); heroProgress?.classList.remove('is-running'); }
+      else if (!heroPaused) scheduleHero();
+    });
+  }
+
+  function updateLightbox() {
+    const photo = filteredPhotos[lightboxIndex];
+    if (!photo) return;
+    const token = ++lightboxLoadToken;
+
+    // Show the already-available optimized preview immediately. Only now,
+    // because the user explicitly opened this photo, request the original.
+    if (lightboxImage) {
+      lightboxImage.src = photo.previewSrc;
+      if (photo.previewSrcSet) lightboxImage.srcset = photo.previewSrcSet;
+      else lightboxImage.removeAttribute('srcset');
+      lightboxImage.sizes = '100vw';
+      lightboxImage.alt = photo.alt;
+      if (photo.width) lightboxImage.width = photo.width;
+      if (photo.height) lightboxImage.height = photo.height;
+      lightboxImage.classList.add('is-loading-full');
+    }
+    if (lightboxTitle) lightboxTitle.textContent = photo.title;
+    if (lightboxDescription) lightboxDescription.textContent = photo.description || '';
+    if (lightboxDetail) lightboxDetail.textContent = detailLine(photo);
+    if (lightboxTechnical) lightboxTechnical.textContent = [technicalLine(photo), 'Loading full resolution…'].filter(Boolean).join(' · ');
+    renderTagContainer(lightboxTags, photo.tags);
+    if (lightboxCounter) lightboxCounter.textContent = `${pad(lightboxIndex + 1)} / ${pad(filteredPhotos.length)}`;
+    if (lightboxPrev) lightboxPrev.hidden = filteredPhotos.length < 2;
+    if (lightboxNext) lightboxNext.hidden = filteredPhotos.length < 2;
+
+    if (photo.originalSrc) {
+      const original = new Image();
+      original.decoding = 'async';
+      original.onload = () => {
+        if (token !== lightboxLoadToken || !lightboxImage) return;
+        lightboxImage.removeAttribute('srcset');
+        lightboxImage.removeAttribute('sizes');
+        lightboxImage.src = photo.originalSrc;
+        lightboxImage.classList.remove('is-loading-full');
+        if (lightboxTechnical) lightboxTechnical.textContent = [technicalLine(photo), 'Full resolution'].filter(Boolean).join(' · ');
+      };
+      original.onerror = () => {
+        if (token !== lightboxLoadToken || !lightboxImage) return;
+        lightboxImage.classList.remove('is-loading-full');
+        if (lightboxTechnical) lightboxTechnical.textContent = [technicalLine(photo), 'Preview'].filter(Boolean).join(' · ');
+      };
+      original.src = photo.originalSrc;
+    }
+
+    // Only preload the next low-resolution preview. Never preload the next
+    // original image; full-resolution transfer requires an explicit open.
+    const nextPhoto = filteredPhotos[(lightboxIndex + 1) % filteredPhotos.length];
+    if (nextPhoto) preload(nextPhoto.previewSrc, nextPhoto.previewSrcSet);
+  }
+
+  function openLightbox(index) {
+    if (!lightbox || !filteredPhotos.length) return;
+    lightboxIndex = Math.max(0, Math.min(index, filteredPhotos.length - 1));
+    updateLightbox();
+    document.body.classList.add('lightbox-open');
+    if (typeof lightbox.showModal === 'function') lightbox.showModal(); else lightbox.setAttribute('open', '');
+  }
+
+  function closeLightbox() {
+    if (!lightbox) return;
+    lightboxLoadToken += 1;
+    document.body.classList.remove('lightbox-open');
+    if (typeof lightbox.close === 'function' && lightbox.open) lightbox.close(); else lightbox.removeAttribute('open');
+  }
+
+  function setupLightbox() {
+    lightbox?.addEventListener('click', event => { if (event.target.closest('[data-lightbox-close]')) closeLightbox(); });
+    lightboxPrev?.addEventListener('click', () => { lightboxIndex = (lightboxIndex - 1 + filteredPhotos.length) % filteredPhotos.length; updateLightbox(); });
+    lightboxNext?.addEventListener('click', () => { lightboxIndex = (lightboxIndex + 1) % filteredPhotos.length; updateLightbox(); });
+    document.addEventListener('keydown', event => {
+      if (!lightbox?.open) return;
+      if (event.key === 'Escape') closeLightbox();
+      if (event.key === 'ArrowLeft' && filteredPhotos.length > 1) { lightboxIndex = (lightboxIndex - 1 + filteredPhotos.length) % filteredPhotos.length; updateLightbox(); }
+      if (event.key === 'ArrowRight' && filteredPhotos.length > 1) { lightboxIndex = (lightboxIndex + 1) % filteredPhotos.length; updateLightbox(); }
+    });
+  }
+
+  function setupMobileTabs() {
+    const tabbar = $('.mobile-tabbar');
+    if (!tabbar) return;
+    const tabs = $$('.tab', tabbar);
+    const sections = [
+      { el: $('#featured'), tab: 'top' },
+      { el: $('#gallery'), tab: 'gallery' },
+      { el: $('#about'), tab: 'about' },
+    ].filter(section => section.el);
+    if (!sections.length) return;
+
+    const setActive = (tabName) => {
+      tabs.forEach(tab => {
+        const on = tab.dataset.tab === tabName;
+        tab.classList.toggle('is-active', on);
+        if (on) tab.setAttribute('aria-current', 'true'); else tab.removeAttribute('aria-current');
+      });
+    };
+
+    // Highlight whichever section is crossing a thin band ~35% down the viewport.
+    // A rootMargin band (not intersectionRatio) stays correct even though the
+    // gallery dwarfs the viewport, and it keys off the viewport so it works no
+    // matter which element is the scroll container.
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const match = sections.find(section => section.el === entry.target);
+        if (match) setActive(match.tab);
+      });
+    }, { rootMargin: '-35% 0px -64% 0px', threshold: 0 });
+    sections.forEach(section => observer.observe(section.el));
+  }
+
+  function setupMisc() { const year = $('.current-year'); if (year) year.textContent = String(new Date().getFullYear()); }
+
+  setupTheme(); setupHeader(); setupGallery(); setupHero(); setupLightbox(); setupMobileTabs(); setupMisc();
+})();

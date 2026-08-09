@@ -1,0 +1,657 @@
+{
+  "golden-gate-bridge-sunset.jpg": {
+    "title": "Big Red at Blue Hour — Golden Gate Bridge",
+    "tags": [
+      "Travel",
+      "Architecture",
+      "Cityscape",
+      "Golden Hour"
+    ],
+    "description": "The Golden Gate catches the last warm light as fog gathers over the bay, its towers glowing against a pastel San Francisco sky.",
+    "location": "San Francisco, California",
+    "order": 10,
+    "featured": true,
+    "featuredOrder": 3
+  },
+  "colosseum-rome-dusk.jpg": {
+    "title": "Two Thousand Years and Still Standing — The Colosseum",
+    "tags": [
+      "Travel",
+      "Architecture",
+      "Golden Hour"
+    ],
+    "description": "Rome's Colosseum stands floodlit against a violet dusk — nearly two thousand years of stone still commanding the skyline.",
+    "location": "Rome, Italy",
+    "year": 2018,
+    "order": 59
+  },
+  "vatican-staircase-skylight-bw.jpg": {
+    "title": "Look Up — Vatican Skylight",
+    "tags": [
+      "Travel",
+      "Architecture",
+      "Black & White"
+    ],
+    "description": "Looking straight up into the geometry of a Vatican skylight, concentric arches and glass resolving into a perfect octagon.",
+    "location": "Vatican City",
+    "year": 2018,
+    "order": 62
+  },
+  "st-peters-basilica-vatican.jpg": {
+    "title": "Holding Court — St. Peter's Basilica",
+    "tags": [
+      "Travel",
+      "Architecture"
+    ],
+    "description": "Evening light warms the facade of St. Peter's Basilica, the empty square lending the grand architecture a rare stillness.",
+    "location": "Vatican City",
+    "year": 2018,
+    "order": 60
+  },
+  "florence-skyline-sunset.jpg": {
+    "title": "Cotton Candy Skies — Florence",
+    "tags": [
+      "Travel",
+      "Cityscape",
+      "Golden Hour"
+    ],
+    "description": "Cotton-candy light settles over Florence, Brunelleschi's dome and the Palazzo Vecchio rising above the terracotta rooftops.",
+    "location": "Florence, Italy",
+    "year": 2018,
+    "order": 61
+  },
+  "sailboat-marina-dusk.jpg": {
+    "title": "Masts and Mirrors — Marina at Dusk",
+    "tags": [
+      "Travel",
+      "Long Exposure",
+      "Golden Hour"
+    ],
+    "description": "Masts stand mirror-still over a glassy harbor at blue hour, dock lights bleeding gold into the water.",
+    "order": 55
+  },
+  "antelope-canyon-stairway.jpg": {
+    "title": "Waves of Stone — Antelope Canyon",
+    "tags": [
+      "Landscape",
+      "Travel"
+    ],
+    "description": "Deep inside Antelope Canyon, a lone figure on the stairway gives scale to the sculpted sandstone and a falling shaft of light.",
+    "location": "Page, Arizona",
+    "year": 2017,
+    "order": 47,
+    "featured": true,
+    "featuredOrder": 10
+  },
+  "seattle-skyline-night-bw.jpg": {
+    "title": "Sleepless in Monochrome — Seattle Skyline",
+    "tags": [
+      "Cityscape",
+      "Black & White",
+      "Panorama"
+    ],
+    "description": "Seattle's skyline glitters across the water in monochrome, the Space Needle anchoring a long, quiet night exposure.",
+    "location": "Seattle, Washington",
+    "order": 52
+  },
+  "yosemite-valley-star-trails.jpg": {
+    "title": "The Sky Left Streaks — Yosemite Star Trails",
+    "tags": [
+      "Landscape",
+      "Night Sky",
+      "Long Exposure"
+    ],
+    "description": "Stars wheel over Yosemite Valley in long streaks while the last autumn color clings to the trees below the granite walls.",
+    "location": "Yosemite National Park, California",
+    "order": 11
+  },
+  "delicate-arch-golden-hour.jpg": {
+    "title": "Golden Hour, Golden Arch — Delicate Arch",
+    "tags": [
+      "Landscape",
+      "Travel",
+      "Golden Hour"
+    ],
+    "description": "Delicate Arch glows at golden hour, framed by the snow-dusted La Sal Mountains on the horizon.",
+    "location": "Arches National Park, Utah",
+    "year": 2025,
+    "order": 64
+  },
+  "antelope-canyon-blue-sky.jpg": {
+    "title": "A Sliver of Sky — Antelope Canyon",
+    "tags": [
+      "Landscape",
+      "Travel"
+    ],
+    "description": "A narrow ribbon of blue sky threads between the flame-colored walls of Antelope Canyon.",
+    "location": "Page, Arizona",
+    "year": 2017,
+    "order": 9
+  },
+  "antelope-canyon-opening.jpg": {
+    "title": "Light at the End — Antelope Canyon",
+    "tags": [
+      "Landscape",
+      "Travel"
+    ],
+    "description": "Light spills through a canyon opening, igniting the layered sandstone in shades of amber and rust.",
+    "location": "Page, Arizona",
+    "year": 2017,
+    "order": 48
+  },
+  "marina-bay-sands-night.jpg": {
+    "title": "The Ship That Docked on Rooftops — Marina Bay Sands",
+    "tags": [
+      "Travel",
+      "Architecture",
+      "Cityscape"
+    ],
+    "description": "Marina Bay Sands hovers over the water like a ship run aground on rooftops, Singapore glowing beneath it.",
+    "location": "Singapore",
+    "year": 2022,
+    "order": 50
+  },
+  "singapore-skyline-night.jpg": {
+    "title": "The City That Never Dims — Singapore Skyline",
+    "tags": [
+      "Travel",
+      "Cityscape",
+      "Long Exposure"
+    ],
+    "description": "Singapore's financial district blazes across the bay, its towers doubled in the still night water.",
+    "location": "Singapore",
+    "year": 2022,
+    "order": 51
+  },
+  "half-dome-sunset-glacier-point.jpg": {
+    "title": "Last Light on the Giant — Half Dome",
+    "tags": [
+      "Landscape",
+      "Golden Hour"
+    ],
+    "description": "Alpenglow sets Half Dome alight as seen from Glacier Point, the last fire of sunset spreading across the high country.",
+    "location": "Yosemite National Park, California",
+    "order": 7,
+    "featured": true,
+    "featuredOrder": 9
+  },
+  "antelope-canyon-abstract.jpg": {
+    "title": "Sandstone in Motion — Antelope Canyon",
+    "tags": [
+      "Landscape",
+      "Travel",
+      "Abstract"
+    ],
+    "description": "The sandstone of Antelope Canyon dissolves into pure abstraction — waves of orange and violet carved by water and time.",
+    "location": "Page, Arizona",
+    "year": 2017,
+    "order": 49
+  },
+  "snowy-mountain-forest.jpg": {
+    "title": "Fresh Powder, No Footprints — Snowy Forest",
+    "tags": [
+      "Landscape",
+      "Winter"
+    ],
+    "description": "Fresh snow blankets a pine forest, the mountains beyond fading into a soft winter overcast.",
+    "location": "Colorado",
+    "year": 2024,
+    "order": 57
+  },
+  "autumn-maple-road.jpg": {
+    "title": "The Road Turns Red — Autumn Maples",
+    "tags": [
+      "Landscape",
+      "Autumn"
+    ],
+    "description": "A quiet road curves beneath a corridor of maples at the peak of autumn, the asphalt strewn with fallen red leaves.",
+    "year": 2024,
+    "order": 56
+  },
+  "boulder-flatirons-winter-bw.jpg": {
+    "title": "Snow Day Beneath the Flatirons — Boulder",
+    "tags": [
+      "Landscape",
+      "Winter",
+      "Black & White"
+    ],
+    "description": "Snow settles over a building beneath Boulder's Flatirons, the range dissolving into cloud in this quiet monochrome.",
+    "location": "Boulder, Colorado",
+    "year": 2025,
+    "order": 58
+  },
+  "gerenuk-portrait.jpg": {
+    "title": "The Long-Necked One — Gerenuk",
+    "tags": [
+      "Wildlife"
+    ],
+    "description": "A gerenuk turns its slender neck toward the light, the antelope’s delicate features emerging from deep shadow.",
+    "order": 40
+  },
+  "los-angeles-skyline-night-bw.jpg": {
+    "title": "City of Angels After Dark — Los Angeles",
+    "tags": [
+      "Cityscape",
+      "Black & White",
+      "Panorama"
+    ],
+    "description": "The lights of downtown Los Angeles stretch to the horizon in a sweeping black-and-white night panorama.",
+    "location": "Los Angeles, California",
+    "order": 53
+  },
+  "sea-nettle-jellyfish.jpg": {
+    "title": "Grace on the Drift — Sea Nettle",
+    "tags": [
+      "Marine Life"
+    ],
+    "description": "A sea nettle drifts through deep blue water, trailing lace-like tentacles behind its glowing bell.",
+    "order": 28
+  },
+  "jellyfish-blue-water.jpg": {
+    "title": "Floating in the Deep Blue — Jellyfish",
+    "tags": [
+      "Marine Life"
+    ],
+    "description": "Suspended in electric blue, a jellyfish pulses gently through the dark, backlit like stained glass.",
+    "order": 29
+  },
+  "jellyfish-glowing.jpg": {
+    "title": "Lit From Within — Jellyfish",
+    "tags": [
+      "Marine Life"
+    ],
+    "description": "A jellyfish glows from within against a field of cobalt, its striped bell impossibly delicate.",
+    "order": 18
+  },
+  "jellyfish-drifting.jpg": {
+    "title": "Going With the Flow — Jellyfish",
+    "tags": [
+      "Marine Life"
+    ],
+    "description": "Tentacles streaming, a jellyfish drifts weightless through the aquarium’s blue dark.",
+    "order": 30
+  },
+  "full-moon.jpg": {
+    "title": "Say Cheese, Moon — Full Moon",
+    "tags": [
+      "Night Sky",
+      "Black & White"
+    ],
+    "description": "The full moon hangs in a black sky, every crater and mare rendered in crisp monochrome detail.",
+    "order": 45
+  },
+  "pfeiffer-beach-arch-sunset.jpg": {
+    "title": "Purple Sand, Golden Rock — Pfeiffer Beach",
+    "tags": [
+      "Landscape",
+      "Seascape",
+      "Golden Hour",
+      "Long Exposure"
+    ],
+    "description": "Waves rush around the keyhole rock at Pfeiffer Beach while sunset paints the sky and its famous purple sand in soft pinks.",
+    "location": "Big Sur, California",
+    "order": 8,
+    "featured": true,
+    "featuredOrder": 11
+  },
+  "yosemite-falls.jpg": {
+    "title": "The Long Drop — Yosemite Falls",
+    "tags": [
+      "Landscape",
+      "Waterfall"
+    ],
+    "description": "Yosemite Falls tumbles down the granite in a long white ribbon, framed by green summer forest.",
+    "location": "Yosemite National Park, California",
+    "order": 46
+  },
+  "dream-lake-stargazing-night.jpg": {
+    "title": "Just Me and a Billion Stars — Dream Lake",
+    "tags": [
+      "Landscape",
+      "Night Sky",
+      "Astrophotography"
+    ],
+    "description": "A lone stargazer sits beneath a sky full of stars at Dream Lake, Hallett Peak looming over the still water.",
+    "location": "Rocky Mountain National Park, Colorado",
+    "order": 4,
+    "featured": true,
+    "featuredOrder": 6
+  },
+  "delicate-arch-sunburst.jpg": {
+    "title": "Catching the Sun — Delicate Arch",
+    "tags": [
+      "Landscape",
+      "Travel"
+    ],
+    "description": "The midday sun bursts over Delicate Arch, flaring across the red-rock bowl of Arches National Park.",
+    "location": "Arches National Park, Utah",
+    "order": 21
+  },
+  "delicate-arch-backlit-sunstar.jpg": {
+    "title": "Backlit and Blazing — Delicate Arch",
+    "tags": [
+      "Landscape",
+      "Travel"
+    ],
+    "description": "Backlit by a low sun, Delicate Arch becomes a silhouette while a sharp sunstar bursts along its edge.",
+    "location": "Arches National Park, Utah",
+    "order": 13
+  },
+  "delicate-arch-la-sal-mountains.jpg": {
+    "title": "Framing the La Sals — Delicate Arch",
+    "tags": [
+      "Landscape",
+      "Travel",
+      "Winter"
+    ],
+    "description": "Delicate Arch frames the snow-capped La Sal Mountains, red sandstone meeting distant white peaks.",
+    "location": "Arches National Park, Utah",
+    "order": 20
+  },
+  "delicate-arch-sunset.jpg": {
+    "title": "Nature's Doorway at Golden Hour — Delicate Arch",
+    "tags": [
+      "Landscape",
+      "Travel",
+      "Golden Hour"
+    ],
+    "description": "Warm sunset light pours through Delicate Arch, the sandstone glowing above the desert and distant mountains.",
+    "location": "Arches National Park, Utah",
+    "order": 2,
+    "featured": true,
+    "featuredOrder": 2
+  },
+  "mesa-arch-canyonlands.jpg": {
+    "title": "A Window on Canyon Country — Mesa Arch",
+    "tags": [
+      "Landscape",
+      "Travel"
+    ],
+    "description": "Mesa Arch frames a vast expanse of canyon country, its underside lit by reflected morning light.",
+    "location": "Canyonlands National Park, Utah",
+    "order": 12,
+    "featured": true,
+    "featuredOrder": 8
+  },
+  "canyonlands-overlook-panorama.jpg": {
+    "title": "As Far as the Eye Can See — Canyonlands",
+    "tags": [
+      "Landscape",
+      "Panorama"
+    ],
+    "description": "A sweeping panorama over Canyonlands, endless mesas and carved washes receding to the horizon.",
+    "location": "Canyonlands National Park, Utah",
+    "order": 44
+  },
+  "elk-bw.jpg": {
+    "title": "Young and Watchful — Elk",
+    "tags": [
+      "Wildlife",
+      "Black & White"
+    ],
+    "description": "A young elk pauses at the forest edge, its portrait rendered in soft black and white.",
+    "order": 41
+  },
+  "stellers-jay.jpg": {
+    "title": "Bad Hair, Don't Care — Steller's Jay",
+    "tags": [
+      "Wildlife",
+      "Birds"
+    ],
+    "description": "A Steller’s jay shows off its crest and electric-blue plumage against a muted forest floor.",
+    "order": 39
+  },
+  "grand-teton-milky-way-panorama.jpg": {
+    "title": "The Galaxy Over the Tetons — Milky Way",
+    "tags": [
+      "Landscape",
+      "Night Sky",
+      "Astrophotography",
+      "Panorama"
+    ],
+    "description": "The Milky Way arcs over the jagged Teton range in a wide night panorama above the sagebrush flats.",
+    "location": "Grand Teton National Park, Wyoming",
+    "order": 3
+  },
+  "suv-under-the-stars.jpg": {
+    "title": "Parked Beneath the Cosmos — Road Trip",
+    "tags": [
+      "Night Sky",
+      "Astrophotography"
+    ],
+    "description": "A car rests beneath a sky thick with stars, mountains lining the horizon on a quiet road-trip night.",
+    "location": "Grand Teton National Park, Wyoming",
+    "order": 63
+  },
+  "moose-portrait.jpg": {
+    "title": "The Gentle Giant — Moose",
+    "tags": [
+      "Wildlife"
+    ],
+    "description": "A young moose emerges from the dark timber, ears forward, caught in a shaft of forest light.",
+    "order": 26
+  },
+  "grizzly-bear-brush.jpg": {
+    "title": "Just Bearly Hidden — Grizzly",
+    "tags": [
+      "Wildlife"
+    ],
+    "description": "A grizzly moves through a hillside of green brush, glancing back toward the camera.",
+    "order": 24
+  },
+  "grand-teton-sunset.jpg": {
+    "title": "The Sky Caught Fire — Grand Teton",
+    "tags": [
+      "Landscape",
+      "Golden Hour"
+    ],
+    "description": "The sky catches fire above the Grand Tetons, burning cloud framing the snow-streaked peaks.",
+    "location": "Grand Teton National Park, Wyoming",
+    "order": 14,
+    "featured": true,
+    "featuredOrder": 4
+  },
+  "grizzly-bear-bw.jpg": {
+    "title": "Fresh Out of the Water — Grizzly",
+    "tags": [
+      "Wildlife",
+      "Black & White"
+    ],
+    "description": "A grizzly lifts its head streaming with water, droplets frozen against the dark in stark black and white.",
+    "order": 42
+  },
+  "ground-squirrel-bw.jpg": {
+    "title": "Do Not Disturb — Ground Squirrel",
+    "tags": [
+      "Wildlife",
+      "Black & White"
+    ],
+    "description": "A ground squirrel curls up for a nap among the rocks — a small, quiet moment in monochrome.",
+    "order": 43
+  },
+  "gray-wolf-resting-bw.jpg": {
+    "title": "Keeping One Eye Open — Gray Wolf",
+    "tags": [
+      "Wildlife",
+      "Black & White"
+    ],
+    "description": "A gray wolf rests in the grass, one eye open and watchful, in a quiet black-and-white study.",
+    "order": 32
+  },
+  "wolf-howling-bw.jpg": {
+    "title": "Someone Order a Solo? — Howling Wolf",
+    "tags": [
+      "Wildlife",
+      "Black & White"
+    ],
+    "description": "A wolf lifts its muzzle to howl, rim-lit against a black forest in dramatic monochrome.",
+    "order": 31
+  },
+  "wolf-eye-closeup.jpg": {
+    "title": "Here's Looking at You — Gray Wolf",
+    "tags": [
+      "Wildlife"
+    ],
+    "description": "A single amber eye burns out of a wolf’s gray face, the rest of the frame drained to black and white.",
+    "order": 15,
+    "featured": true,
+    "featuredOrder": 1
+  },
+  "wolf-eyes-closeup.jpg": {
+    "title": "Windows to the Wild — Wolf Eyes",
+    "tags": [
+      "Wildlife"
+    ],
+    "description": "The unblinking amber eyes of a wolf hold the frame, every hair rendered sharp against soft shadow.",
+    "order": 36
+  },
+  "two-wolves-in-grass.jpg": {
+    "title": "Partners in Crime — Wolf Pair",
+    "tags": [
+      "Wildlife"
+    ],
+    "description": "Two wolves move together through spring grass, one snarling playfully at the other.",
+    "order": 23
+  },
+  "two-wolves-walking.jpg": {
+    "title": "The Morning Patrol — Wolf Pair",
+    "tags": [
+      "Wildlife"
+    ],
+    "description": "A pair of wolves stride toward the camera in step — the morning patrol of the pack.",
+    "order": 22
+  },
+  "bald-eagle-pair.jpg": {
+    "title": "Two Birds, One Camera — Bald Eagles",
+    "tags": [
+      "Wildlife",
+      "Birds"
+    ],
+    "description": "Two bald eagles lean close against the dark rock, one staring straight down the lens.",
+    "order": 25
+  },
+  "rainbow-trout-portrait.jpg": {
+    "title": "Scales Like Stained Glass — Rainbow Trout",
+    "tags": [
+      "Wildlife",
+      "Marine Life"
+    ],
+    "description": "A rainbow trout’s head fills the frame, its scales shimmering like wet stained glass.",
+    "order": 38
+  },
+  "bison-grazing.jpg": {
+    "title": "Lawn Care, Yellowstone Edition — Bison",
+    "tags": [
+      "Wildlife"
+    ],
+    "description": "A bison lowers its massive head to graze, backlit fur catching the light in Yellowstone’s meadows.",
+    "location": "Yellowstone National Park, Wyoming",
+    "order": 37
+  },
+  "grand-prismatic-spring-panorama.jpg": {
+    "title": "Earth's Own Rainbow — Grand Prismatic Spring",
+    "tags": [
+      "Landscape",
+      "Travel",
+      "Panorama"
+    ],
+    "description": "Yellowstone’s Grand Prismatic Spring blooms in impossible color, rings of orange and blue radiating from its steaming center.",
+    "location": "Yellowstone National Park, Wyoming",
+    "order": 1
+  },
+  "aurora-over-neighborhood.jpg": {
+    "title": "The Sky Put On a Show — Aurora",
+    "tags": [
+      "Night Sky",
+      "Aurora"
+    ],
+    "description": "A rare aurora ripples pink and green over a Colorado neighborhood, the night sky briefly turned electric.",
+    "location": "Colorado",
+    "order": 19
+  },
+  "aurora-borealis-colorado.jpg": {
+    "title": "Northern Lights, Down South — Aurora over Colorado",
+    "tags": [
+      "Night Sky",
+      "Aurora"
+    ],
+    "description": "The northern lights blaze crimson and green far south of their usual range, glowing over rooftops in Colorado.",
+    "location": "Colorado",
+    "order": 5,
+    "featured": true,
+    "featuredOrder": 7
+  },
+  "gray-wolf-walking-bw.jpg": {
+    "title": "On the Prowl — Gray Wolf",
+    "tags": [
+      "Wildlife",
+      "Black & White"
+    ],
+    "description": "A gray wolf pads through shadow, head low and eyes fixed, in moody black and white.",
+    "order": 33
+  },
+  "wolf-snarling.jpg": {
+    "title": "Not in the Mood — Snarling Wolf",
+    "tags": [
+      "Wildlife"
+    ],
+    "description": "A wolf curls its lip in a snarl, a single amber eye and pink tongue breaking through the monochrome.",
+    "order": 16
+  },
+  "white-wolf-portrait.jpg": {
+    "title": "Eyes of Amber — White Wolf",
+    "tags": [
+      "Wildlife"
+    ],
+    "description": "A white wolf meets the camera with calm amber eyes, its pale fur glowing against the dark.",
+    "order": 6,
+    "featured": true,
+    "featuredOrder": 5
+  },
+  "wolf-baring-teeth.jpg": {
+    "title": "All Teeth, No Bluff — Wolf",
+    "tags": [
+      "Wildlife"
+    ],
+    "description": "A wolf bares its teeth in warning, the flash of fang and tongue set against silver-gray fur.",
+    "order": 17
+  },
+  "wolf-portrait-bw.jpg": {
+    "title": "The Quiet Stare — Wolf",
+    "tags": [
+      "Wildlife",
+      "Black & White"
+    ],
+    "description": "A wolf holds a quiet, steady gaze, its portrait soft and grainy in black and white.",
+    "order": 35
+  },
+  "wolf-in-snowfall.jpg": {
+    "title": "First Snow of the Season — Wolf",
+    "tags": [
+      "Wildlife",
+      "Winter"
+    ],
+    "description": "A wolf watches through falling snow, flakes catching in its thick winter coat.",
+    "order": 34
+  },
+  "mountain-forest-waterfall.jpg": {
+    "title": "Where the Mountain Spills Over — Waterfall",
+    "tags": [
+      "Landscape",
+      "Waterfall"
+    ],
+    "description": "A mountain stream spills over granite steps through evergreen forest, water blurred to silk by a long exposure.",
+    "location": "Rocky Mountain National Park, Colorado",
+    "order": 54
+  },
+  "pelican-in-flight.jpg": {
+    "title": "Riding the Golden Light — Pelican",
+    "tags": [
+      "Wildlife",
+      "Birds",
+      "Golden Hour"
+    ],
+    "description": "A pelican banks through warm, hazy light, wings spread wide against a glowing sky.",
+    "order": 27
+  }
+}

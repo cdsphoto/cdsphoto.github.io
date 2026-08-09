@@ -1,0 +1,158 @@
+---
+import site from '../data/site.json';
+import { photos } from '../lib/photos.js';
+
+const base = import.meta.env.BASE_URL;
+const ogImage = Astro.site
+  ? new URL(`${base}assets/og-image.jpg`, Astro.site).href
+  : `${base}assets/og-image.jpg`;
+const galleryData = {
+  photos,
+  settings: {
+    heroInterval: site.heroInterval,
+    galleryBatchSize: site.galleryBatchSize,
+  },
+};
+const galleryJson = JSON.stringify(galleryData).replace(/</g, '\\u003c');
+---
+<!doctype html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0c0e" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)" />
+  <meta name="description" content={site.description} />
+  <meta name="color-scheme" content="light dark" />
+  <title>{site.title}</title>
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={site.title} />
+  <meta property="og:description" content={site.description} />
+  <meta property="og:image" content={ogImage} />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={site.title} />
+  <meta name="twitter:description" content={site.description} />
+  <meta name="twitter:image" content={ogImage} />
+
+  <link rel="icon" type="image/png" sizes="32x32" href={`${base}assets/favicon-32.png`} />
+  <link rel="icon" type="image/png" sizes="16x16" href={`${base}assets/favicon-16.png`} />
+  <link rel="apple-touch-icon" href={`${base}assets/apple-touch-icon.png`} />
+  <link rel="manifest" href={`${base}manifest.webmanifest`} />
+  <meta name="application-name" content={site.brand} />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content={site.brand} />
+  <link rel="stylesheet" href={`${base}assets/styles.css`} />
+  <script is:inline>
+    (function () {
+      try {
+        const saved = localStorage.getItem('cds-photo-theme');
+        if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+      } catch (_) {}
+    }());
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#gallery">Skip to gallery</a>
+
+  <header class="site-header" id="top">
+    <a class="brand" href="#top" aria-label={`${site.title} home`}>
+      <span class="brand-mark" aria-hidden="true"></span><span>{site.brand}</span>
+    </a>
+    <nav class="main-nav" aria-label="Primary navigation"><a href="#gallery">Gallery</a><a href="#about">About</a></nav>
+    <button class="icon-button theme-toggle" type="button" aria-label="Switch color theme" title="Switch color theme">
+      <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"></path></svg>
+      <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.3 15.7A8.5 8.5 0 0 1 8.3 3.7 8.5 8.5 0 1 0 20.3 15.7Z"></path></svg>
+    </button>
+  </header>
+
+  <section class="hero" id="featured" aria-label="Featured photographs">
+    <div class="hero-stage" aria-live="off">
+      <div class="hero-frame hero-frame-a is-active" aria-hidden="true"></div>
+      <div class="hero-frame hero-frame-b" aria-hidden="true"></div>
+      <div class="hero-vignette" aria-hidden="true"></div>
+    </div>
+    <div class="hero-empty" hidden>
+      <div class="hero-empty-inner"><p class="eyebrow">Your portfolio is ready</p><h1>Add photographs to <code>src/photos/</code></h1><p>Then assign tags and featured status in <code>src/data/photos.json</code>.</p></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-copy">
+        <p class="eyebrow">{site.heroEyebrow}</p><h1>{site.heroHeading}</h1>
+        <div class="hero-photo-meta" aria-live="polite"><p class="hero-photo-detail"></p><p class="hero-photo-title"></p><div class="hero-photo-tags"></div></div>
+      </div>
+      <div class="hero-controls" aria-label="Featured slideshow controls">
+        <button class="hero-control hero-prev" type="button" aria-label="Previous featured photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18 9 12l6-6"></path></svg></button>
+        <button class="hero-control hero-pause" type="button" aria-label="Pause featured slideshow"><svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6v12M15 6v12"></path></svg><svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 9 6-9 6Z"></path></svg></button>
+        <button class="hero-control hero-next" type="button" aria-label="Next featured photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
+        <div class="hero-count" aria-live="polite"><span class="hero-current">01</span><span class="hero-divider">/</span><span class="hero-total">01</span></div>
+      </div>
+    </div>
+    <div class="hero-progress" aria-hidden="true"><span></span></div>
+    <a class="hero-scroll" href="#gallery" aria-label="Scroll to gallery"><span>Explore</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M7 14l5 5 5-5"></path></svg></a>
+  </section>
+
+  <main>
+    <section class="gallery-section" id="gallery" aria-labelledby="gallery-title">
+      <div class="section-heading"><div><p class="eyebrow">Archive</p><h2 id="gallery-title">The collection</h2></div><p class="gallery-count" aria-live="polite"></p></div>
+      <div class="filter-row" role="toolbar" aria-label="Filter photographs by tag">
+        <button class="filter-chip is-active" type="button" data-filter="all" aria-pressed="true">All</button>
+      </div>
+      <p class="filter-hint">Select one or more tags. Multiple selected tags are combined.</p>
+      <div class="gallery-grid" aria-live="polite"></div>
+      <div class="gallery-empty" hidden><p>No photographs match these tags.</p></div>
+      <div class="show-more-wrap" hidden><button class="show-more" type="button">Show more</button></div>
+    </section>
+
+    <section class="about-section" id="about" aria-labelledby="about-title">
+      <div class="about-index" aria-hidden="true">01</div>
+      <div class="about-copy"><p class="eyebrow">About</p><h2 id="about-title">{site.aboutHeading}</h2>{String(site.aboutText || '').split(/\n\n+/).map((para) => <p>{para}</p>)}</div>
+      <div class="about-meta">
+        {site.location && <div><span>Based in</span><strong>{site.location}</strong></div>}
+        {site.specialties?.length && <div><span>Focus</span><div class="about-specialties">{site.specialties.map((s) => <span class="about-chip">{s}</span>)}</div></div>}
+        {site.email && <div><span>Contact</span><a href={`mailto:${site.email}`}>{site.email}</a></div>}
+        {site.instagramUrl && <div><span>Follow</span><a href={site.instagramUrl} target="_blank" rel="noopener">{site.instagramLabel}</a></div>}
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer"><a class="brand footer-brand" href="#top"><span class="brand-mark" aria-hidden="true"></span><span>{site.brand}</span></a><p>© <span class="current-year"></span> {site.title}. All photographs reserved.</p><a class="back-to-top" href="#top">Back to top <span aria-hidden="true">↑</span></a></footer>
+
+  <div class="install-prompt" hidden role="dialog" aria-label="Install this app">
+    <img class="install-icon" src={`${base}assets/icon-192.png`} alt="" width="46" height="46" />
+    <div class="install-text"><strong>Install CDS Photo</strong><span>Add it to your device for a full-screen, app-like experience.</span></div>
+    <div class="install-actions">
+      <button class="install-accept" type="button" hidden>Install</button>
+      <button class="install-dismiss" type="button">Not now</button>
+    </div>
+  </div>
+
+  <nav class="mobile-tabbar" aria-label="Sections">
+    <a class="tab is-active" href="#featured" data-tab="top">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.7V21h14V9.7"></path></svg>
+      <span>Home</span>
+    </a>
+    <a class="tab" href="#gallery" data-tab="gallery">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+      <span>Gallery</span>
+    </a>
+    <a class="tab" href="#about" data-tab="about">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5c0-4 3.6-6.2 7.5-6.2s7.5 2.2 7.5 6.2"></path></svg>
+      <span>About</span>
+    </a>
+  </nav>
+
+  <dialog class="lightbox" aria-label="Photograph viewer">
+    <div class="lightbox-backdrop" data-lightbox-close></div>
+    <div class="lightbox-shell">
+      <header class="lightbox-header"><div class="lightbox-counter" aria-live="polite"></div><button class="icon-button lightbox-close" type="button" aria-label="Close photograph viewer" data-lightbox-close><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></header>
+      <div class="lightbox-media"><button class="lightbox-nav lightbox-prev" type="button" aria-label="Previous photograph"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18 9 12l6-6"></path></svg></button><img class="lightbox-image" src="" alt="" /><button class="lightbox-nav lightbox-next" type="button" aria-label="Next photograph"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button></div>
+      <footer class="lightbox-caption"><div class="lightbox-caption-main"><p class="lightbox-title"></p><p class="lightbox-description"></p><p class="lightbox-detail"></p><p class="lightbox-technical"></p></div><div class="lightbox-tags"></div></footer>
+    </div>
+  </dialog>
+
+  <script is:inline set:html={`window.CDS_PHOTO_DATA = ${galleryJson};`}></script>
+  <script is:inline src={`${base}assets/app.js`}></script>
+  <script is:inline src={`${base}assets/pwa.js`}></script>
+</body>
+</html>

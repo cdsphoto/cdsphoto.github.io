@@ -1,0 +1,22 @@
+---
+import site from '../data/site.json';
+const base = import.meta.env.BASE_URL;
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Page not found — {site.title}</title>
+  <link rel="stylesheet" href={`${base}assets/styles.css`} />
+</head>
+<body>
+  <main style="min-height:100vh;display:grid;place-items:center;padding:32px;text-align:center">
+    <div>
+      <p class="eyebrow">404</p>
+      <h1>Page not found</h1>
+      <p><a href={base}>Return to the photography portfolio</a></p>
+    </div>
+  </main>
+</body>
+</html>

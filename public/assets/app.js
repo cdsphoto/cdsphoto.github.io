@@ -46,7 +46,7 @@
   const lightboxPrev = $('.lightbox-prev');
   const lightboxNext = $('.lightbox-next');
 
-  let activeTags = new Set();
+  let activeTag = null;
   let visibleCount = BATCH_SIZE;
   let filteredPhotos = [];
   let lightboxIndex = 0;
@@ -156,13 +156,9 @@
       const button = event.target.closest('[data-filter]');
       if (!button) return;
       const filter = button.dataset.filter;
-      if (filter === 'all') {
-        activeTags.clear();
-      } else if (activeTags.has(filter)) {
-        activeTags.delete(filter);
-      } else {
-        activeTags.add(filter);
-      }
+      // Single-select: clicking the active tag (or "All") clears the filter;
+      // clicking a different tag replaces whichever one was active.
+      activeTag = filter === 'all' || filter === activeTag ? null : filter;
       visibleCount = BATCH_SIZE;
       syncFilterButtons();
       renderGallery();
@@ -172,20 +168,16 @@
   function syncFilterButtons() {
     $$('.filter-chip', filterRow).forEach(chip => {
       const filter = chip.dataset.filter;
-      const active = filter === 'all' ? activeTags.size === 0 : activeTags.has(filter);
+      const active = filter === 'all' ? activeTag === null : filter === activeTag;
       chip.classList.toggle('is-active', active);
       chip.setAttribute('aria-pressed', String(active));
     });
   }
 
   function matchesActiveTags(photo) {
-    if (activeTags.size === 0) return true;
-    for (const tag of activeTags) {
-      if (tag === '__untagged__') {
-        if (photo.tags.length !== 0) return false;
-      } else if (!photo.tags.includes(tag)) return false;
-    }
-    return true;
+    if (activeTag === null) return true;
+    if (activeTag === '__untagged__') return photo.tags.length === 0;
+    return photo.tags.includes(activeTag);
   }
 
   function createTagPill(tag) {

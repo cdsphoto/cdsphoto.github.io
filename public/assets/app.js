@@ -16,6 +16,7 @@
   const themeToggle = $('.theme-toggle');
   const galleryGrid = $('.gallery-grid');
   const filterRow = $('.filter-row');
+  const filterRowWrap = $('.filter-row-wrap');
   const galleryCount = $('.gallery-count');
   const galleryEmpty = $('.gallery-empty');
   const showMoreWrap = $('.show-more-wrap');
@@ -164,11 +165,11 @@
   // as a visual hint that it scrolls — a row that ends flush at the edge
   // otherwise looks complete with nothing suggesting there's more.
   function updateFilterRowFade() {
-    if (!filterRow) return;
+    if (!filterRow || !filterRowWrap) return;
     const canScrollLeft = filterRow.scrollLeft > 1;
     const canScrollRight = filterRow.scrollLeft + filterRow.clientWidth < filterRow.scrollWidth - 1;
-    filterRow.classList.toggle('is-scrollable-start', canScrollLeft);
-    filterRow.classList.toggle('is-scrollable-end', canScrollRight);
+    filterRowWrap.classList.toggle('is-scrollable-start', canScrollLeft);
+    filterRowWrap.classList.toggle('is-scrollable-end', canScrollRight);
   }
 
   function renderFilters() {

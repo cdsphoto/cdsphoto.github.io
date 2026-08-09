@@ -50,6 +50,7 @@ const galleryJson = JSON.stringify(galleryData).replace(/</g, '\\u003c');
   <meta name="description" content={site.description} />
   <meta name="color-scheme" content="light dark" />
   <title>{site.title}</title>
+  <link rel="canonical" href={siteUrl} />
 
   <meta property="og:type" content="website" />
   <meta property="og:title" content={site.title} />
@@ -127,8 +128,12 @@ const galleryJson = JSON.stringify(galleryData).replace(/</g, '\\u003c');
   <main>
     <section class="gallery-section" id="gallery" aria-labelledby="gallery-title">
       <div class="section-heading"><div><p class="eyebrow">Archive</p><h2 id="gallery-title">The collection</h2></div><p class="gallery-count" aria-live="polite"></p></div>
-      <div class="filter-row" role="toolbar" aria-label="Filter photographs by tag">
-        <button class="filter-chip is-active" type="button" data-filter="all" aria-pressed="true">All</button>
+      <div class="filter-row-wrap">
+        <div class="filter-row" role="toolbar" aria-label="Filter photographs by tag">
+          <button class="filter-chip is-active" type="button" data-filter="all" aria-pressed="true">All</button>
+        </div>
+        <div class="filter-scroll-hint filter-scroll-hint-start" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 18 9 12l6-6"></path></svg></div>
+        <div class="filter-scroll-hint filter-scroll-hint-end" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"></path></svg></div>
       </div>
       <p class="filter-hint">Select a tag to filter the collection.</p>
       <div class="gallery-grid" aria-live="polite"></div>

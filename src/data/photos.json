@@ -717,5 +717,48 @@
     "description": "A pelican banks through warm, hazy light, wings spread wide against a glowing sky.",
     "order": 27,
     "alt": "A pelican in flight with wings fully spread, backlit by golden light."
+  },
+  "bison-herd-grazing-bw.jpg": {
+    "title": "Grazing Committee Meeting — Bison Herd",
+    "tags": [
+      "Wildlife",
+      "Black & White"
+    ],
+    "description": "A bison lowers its head to graze while the rest of the herd trails behind across a quiet, frost-touched field.",
+    "alt": "A bison grazing with its head down, more bison visible walking behind it in a field, in black and white.",
+    "location": "Yellowstone National Park, Wyoming",
+    "order": 37.5
+  },
+  "black-bear-cubs-mountainside.jpg": {
+    "title": "Mom's Got Backup — Black Bear & Cubs",
+    "tags": [
+      "Wildlife"
+    ],
+    "description": "A black bear leads her two cinnamon-colored cubs across a rocky mountainside, single file and watchful.",
+    "alt": "A black bear walking across a rocky mountainside followed by two cinnamon-colored cubs.",
+    "order": 24.5
+  },
+  "grand-teton-reflection-sunset.jpg": {
+    "title": "Double Take — Grand Teton Reflection",
+    "tags": [
+      "Landscape",
+      "Golden Hour"
+    ],
+    "description": "The Tetons and a blazing sunset sky mirror perfectly in the still water of a beaver pond.",
+    "alt": "Grand Teton mountains under a fiery sunset sky, perfectly reflected in a calm pond.",
+    "location": "Grand Teton National Park, Wyoming",
+    "order": 3.5
+  },
+  "alpine-ridge-storm-bw.jpg": {
+    "title": "Weather's Rolling In — Alpine Ridge",
+    "tags": [
+      "Landscape",
+      "Winter",
+      "Black & White"
+    ],
+    "description": "A snow-dusted alpine ridge disappears into storm clouds, rendered in stark black and white.",
+    "alt": "A rugged, snow-dusted mountain ridge beneath heavy storm clouds, in black and white.",
+    "location": "Colorado",
+    "order": 58.5
   }
 }

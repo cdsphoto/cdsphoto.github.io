@@ -163,6 +163,51 @@ img {
   display: none !important;
 }
 
+/* -------------------------------------------------------------------------- */
+/* Nav progress bar (astro:transitions lifecycle, see app.js)                */
+/* -------------------------------------------------------------------------- */
+
+.nav-progress {
+  position: fixed;
+  z-index: 10050;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--text), color-mix(in srgb, var(--text) 35%, transparent));
+  opacity: 0;
+  pointer-events: none;
+  transition: width 320ms ease, opacity 220ms ease;
+}
+
+.nav-progress.is-active {
+  opacity: 1;
+}
+
+.nav-progress.is-done {
+  width: 100% !important;
+  transition: width 200ms ease, opacity 380ms ease 160ms;
+  opacity: 0;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Film grain overlay (toggle in header; persisted like theme)               */
+/* -------------------------------------------------------------------------- */
+
+.grain-overlay {
+  position: fixed;
+  z-index: 9990;
+  inset: 0;
+  opacity: .045;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+html[data-grain="off"] .grain-overlay {
+  display: none;
+}
+
 .skip-link {
   position: fixed;
   z-index: 10000;
@@ -308,21 +353,39 @@ img {
   cursor: pointer;
 }
 
-.theme-toggle {
-  position: relative;
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   justify-self: end;
+}
+
+.theme-toggle,
+.grain-toggle {
+  position: relative;
   background: rgba(255, 255, 255, 0.11);
   color: #fff;
   transition: background 180ms ease, transform 180ms var(--ease);
 }
 
-.site-header.is-scrolled .theme-toggle {
+.site-header.is-scrolled .theme-toggle,
+.site-header.is-scrolled .grain-toggle {
   background: var(--line);
   color: var(--text);
 }
 
-.theme-toggle:hover {
+.theme-toggle:hover,
+.grain-toggle:hover {
   transform: scale(1.04);
+}
+
+.grain-toggle svg {
+  opacity: .55;
+  transition: opacity 180ms ease;
+}
+
+html[data-grain="off"] .grain-toggle svg {
+  opacity: .22;
 }
 
 .icon-button svg,
@@ -849,6 +912,7 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
 
 .gallery-card {
   --card-span: 4;
+  --reveal-y: 22px;
   position: relative;
   grid-column: span var(--card-span);
   min-width: 0;
@@ -861,10 +925,23 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
   box-shadow: 0 1px 0 var(--line);
   cursor: zoom-in;
   text-align: left;
-  transform: translateZ(0);
+  opacity: 0;
+  transform: translateY(var(--reveal-y)) translateZ(0);
   transition:
     transform 420ms var(--ease-out),
-    box-shadow 420ms var(--ease-out);
+    box-shadow 420ms var(--ease-out),
+    opacity 550ms ease;
+}
+
+/* Scroll-reveal target class, added by an IntersectionObserver in app.js as
+   each card enters the viewport. --reveal-y is what :hover below subtracts
+   from, rather than a separate `transform: translateY(-5px)` rule — that
+   would need higher specificity than `.is-visible` to win on hover, which
+   is a fragile thing to keep true across edits. This way there's only ever
+   one rule setting `transform` at a time. */
+.gallery-card.is-visible {
+  --reveal-y: 0px;
+  opacity: 1;
 }
 
 .gallery-card-standard,
@@ -884,7 +961,7 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
 .gallery-card:hover {
   z-index: 2;
   box-shadow: var(--shadow-md);
-  transform: translateY(-5px);
+  transform: translateY(calc(var(--reveal-y) - 5px)) translateZ(0);
 }
 
 .gallery-card:focus-visible {
@@ -899,6 +976,12 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
   overflow: hidden;
   aspect-ratio: var(--photo-ratio, 1.5);
   background: var(--bg-soft);
+  /* --tilt-x/--tilt-y are set on .gallery-card by a delegated pointermove
+     listener in app.js and inherited down to this element, so the photo
+     itself tilts toward the cursor independent of the card's own hover-lift
+     and the image's own hover-zoom (each is a different element/property). */
+  transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transition: transform 420ms var(--ease-out);
 }
 
 .gallery-image-wrap::before {
@@ -1077,6 +1160,117 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
 @keyframes showMoreBreathe {
   0%, 100% { opacity: 0; }
   50% { opacity: 1; }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Locations map                                                              */
+/* -------------------------------------------------------------------------- */
+
+.map-section {
+  padding: 0 var(--page-x) clamp(60px, 8vw, 120px);
+}
+
+.location-map {
+  width: 100%;
+  height: clamp(320px, 45vw, 520px);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-soft);
+}
+
+/* Leaflet ships its own light-chrome UI; re-skin the pieces that show
+   through to match the site's theme variables instead of looking like a
+   pasted-in third-party widget. */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--surface-solid);
+  color: var(--text);
+  box-shadow: var(--shadow-md);
+}
+
+.leaflet-popup-close-button {
+  color: var(--muted) !important;
+}
+
+.leaflet-control-zoom a {
+  background: var(--surface-solid) !important;
+  color: var(--text) !important;
+  border-color: var(--line) !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: var(--surface-hover) !important;
+}
+
+.leaflet-control-attribution {
+  background: var(--surface) !important;
+  color: var(--muted) !important;
+}
+
+.leaflet-control-attribution a {
+  color: var(--muted-strong) !important;
+}
+
+.map-popup-title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.map-popup-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 180px;
+}
+
+.map-popup-thumbs a {
+  display: block;
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.map-popup-thumbs img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.map-popup-more {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--bg-soft);
+}
+
+/* Custom marker dot — echoes .brand-mark's dot motif instead of Leaflet's
+   stock blue pin, so the map reads as part of this site, not a pasted-in
+   widget. */
+.map-marker-dot {
+  display: grid;
+  place-items: center;
+}
+
+.map-marker-dot span {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text);
+  border: 3px solid var(--bg);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .4);
+  transition: transform 180ms var(--ease);
+}
+
+.map-marker-dot:hover span {
+  transform: scale(1.25);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -2069,7 +2263,7 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
 @media (hover: none) {
   .gallery-card:hover {
     box-shadow: 0 1px 0 var(--line);
-    transform: none;
+    transform: translateY(var(--reveal-y)) translateZ(0);
   }
 
   .gallery-card:hover .gallery-image-wrap img {

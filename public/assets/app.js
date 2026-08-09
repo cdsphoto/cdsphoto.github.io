@@ -68,6 +68,16 @@
   let heroTouchStartX = null;
   let lightboxLoadToken = 0;
 
+  const revealedPhotoIds = new Set();
+  const cardRevealObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      revealedPhotoIds.add(Number(entry.target.dataset.revealId));
+      entry.target.classList.add('is-visible');
+      cardRevealObserver.unobserve(entry.target);
+    });
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+
   const photos = rawPhotos.filter(photo => photo && photo.previewSrc).map((photo, index) => ({
     id: index,
     previewSrc: photo.previewSrc,
@@ -144,6 +154,20 @@
     resolveTheme();
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', resolveTheme);
     themeToggle?.addEventListener('click', () => setTheme(html.dataset.resolvedTheme === 'dark' ? 'light' : 'dark'));
+  }
+
+  function setupGrain() {
+    const grainToggle = $('.grain-toggle');
+    let saved = null;
+    try { saved = localStorage.getItem('cds-photo-grain'); } catch (_) {}
+    html.dataset.grain = saved === 'off' ? 'off' : 'on';
+    grainToggle?.setAttribute('aria-pressed', String(html.dataset.grain === 'on'));
+    grainToggle?.addEventListener('click', () => {
+      const next = html.dataset.grain === 'off' ? 'on' : 'off';
+      html.dataset.grain = next;
+      grainToggle.setAttribute('aria-pressed', String(next === 'on'));
+      try { localStorage.setItem('cds-photo-grain', next); } catch (_) {}
+    });
   }
 
   function setupHeader() {
@@ -241,6 +265,19 @@
     button.setAttribute('aria-label', `Open ${photo.title}`);
     button.style.setProperty('--photo-ratio', String(photo.aspectRatio || 1));
 
+    // renderGallery() rebuilds the whole grid from scratch on every filter
+    // change and "Show more" click (replaceChildren, not an incremental
+    // append), so every card is technically a brand-new element each time.
+    // Without this, cards the visitor already scrolled past would flash
+    // back to invisible and re-reveal on every re-render. revealedPhotoIds
+    // makes the reveal a one-time-per-photo thing instead.
+    if (reducedMotion.matches || revealedPhotoIds.has(photo.id)) {
+      button.classList.add('is-visible');
+    } else {
+      cardRevealObserver.observe(button);
+    }
+    button.dataset.revealId = String(photo.id);
+
     const imageWrap = document.createElement('span');
     imageWrap.className = 'gallery-image-wrap';
     const img = document.createElement('img');
@@ -330,6 +367,45 @@
       if (card) openLightbox(Number(card.dataset.photoIndex) || 0);
     });
     showMoreButton?.addEventListener('click', () => { visibleCount += BATCH_SIZE; renderGallery(); });
+    setupCardTilt();
+  }
+
+  const TILT_MAX_DEG = 6;
+
+  // A single delegated listener on the grid rather than one per card, since
+  // cards are rebuilt wholesale on every filter/pagination change. --tilt-x/
+  // --tilt-y are set on the card and inherited down to .gallery-image-wrap,
+  // which is what actually rotates (see styles.css) — kept separate from the
+  // card's own hover-lift and the image's own hover-zoom so none of the
+  // three transforms fight each other.
+  function setupCardTilt() {
+    if (!galleryGrid || reducedMotion.matches) return;
+    let activeCard = null;
+
+    const resetCard = card => {
+      card.style.removeProperty('--tilt-x');
+      card.style.removeProperty('--tilt-y');
+    };
+
+    galleryGrid.addEventListener('pointermove', event => {
+      if (event.pointerType !== 'mouse') return;
+      const card = event.target.closest('.gallery-card');
+      if (!card) {
+        if (activeCard) { resetCard(activeCard); activeCard = null; }
+        return;
+      }
+      if (activeCard && activeCard !== card) resetCard(activeCard);
+      activeCard = card;
+      const rect = card.getBoundingClientRect();
+      const px = (event.clientX - rect.left) / rect.width - 0.5;
+      const py = (event.clientY - rect.top) / rect.height - 0.5;
+      card.style.setProperty('--tilt-y', `${(px * TILT_MAX_DEG).toFixed(2)}deg`);
+      card.style.setProperty('--tilt-x', `${(-py * TILT_MAX_DEG).toFixed(2)}deg`);
+    });
+
+    galleryGrid.addEventListener('pointerleave', () => {
+      if (activeCard) { resetCard(activeCard); activeCard = null; }
+    }, true);
   }
 
   function preload(src, srcSet = '') { if (src) { const image = new Image(); image.src = src; if (srcSet) { image.srcset = srcSet; image.sizes = '100vw'; } } }
@@ -793,8 +869,111 @@
     sections.forEach(section => observer.observe(section.el));
   }
 
+  // Approximate coordinates for the named locations currently used across
+  // photos.json. Add an entry here when a new location string is introduced
+  // elsewhere — a photo whose location isn't in this table is simply left
+  // off the map rather than guessed at.
+  const LOCATION_COORDS = {
+    'Arches National Park, Utah': [38.7331, -109.5925],
+    'Big Sur, California': [36.2704, -121.8081],
+    'Boulder, Colorado': [40.0150, -105.2705],
+    'Canyonlands National Park, Utah': [38.3269, -109.8783],
+    'Colorado': [39.5501, -105.7821],
+    'Florence, Italy': [43.7696, 11.2558],
+    'Grand Teton National Park, Wyoming': [43.7904, -110.6818],
+    'Los Angeles, California': [34.0522, -118.2437],
+    'Page, Arizona': [36.9147, -111.4558],
+    'Rocky Mountain National Park, Colorado': [40.3428, -105.6836],
+    'Rome, Italy': [41.9028, 12.4964],
+    'San Francisco, California': [37.7749, -122.4194],
+    'Seattle, Washington': [47.6062, -122.3321],
+    'Singapore': [1.3521, 103.8198],
+    'Vatican City': [41.9029, 12.4534],
+    'Yellowstone National Park, Wyoming': [44.4280, -110.5885],
+    'Yosemite National Park, California': [37.8651, -119.5383],
+  };
+
+  function setupLocationMap() {
+    const container = $('#location-map');
+    if (!container || typeof window.L === 'undefined') return;
+
+    const groups = new Map();
+    for (const photo of photos) {
+      const coords = LOCATION_COORDS[photo.location];
+      if (!coords) continue;
+      if (!groups.has(photo.location)) groups.set(photo.location, { coords, photos: [] });
+      groups.get(photo.location).photos.push(photo);
+    }
+    if (!groups.size) { container.hidden = true; return; }
+
+    const map = window.L.map(container, { scrollWheelZoom: false, attributionControl: true });
+    window.L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd',
+      maxZoom: 18,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    }).addTo(map);
+
+    const dotIcon = window.L.divIcon({
+      className: 'map-marker-dot',
+      html: '<span></span>',
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+      popupAnchor: [0, -10],
+    });
+
+    const markers = [];
+    for (const [location, group] of groups) {
+      const marker = window.L.marker(group.coords, { icon: dotIcon, title: location }).addTo(map);
+      const shown = group.photos.slice(0, 4);
+      const extra = group.photos.length - shown.length;
+      const thumbs = shown.map(photo =>
+        `<a href="${BASE_PATH}photo/${photo.slug}/" aria-label="${photo.title}"><img src="${photo.previewSrc}" alt="" loading="lazy" /></a>`
+      ).join('');
+      const more = extra > 0 ? `<span class="map-popup-more">+${extra}</span>` : '';
+      const popupHtml =
+        `<p class="map-popup-title">${location} · ${group.photos.length} ${group.photos.length === 1 ? 'photo' : 'photos'}</p>` +
+        `<div class="map-popup-thumbs">${thumbs}${more}</div>`;
+      marker.bindPopup(popupHtml, { closeButton: true, maxWidth: 200 });
+      markers.push(marker);
+    }
+
+    if (markers.length === 1) {
+      map.setView(markers[0].getLatLng(), 5);
+    } else {
+      map.fitBounds(window.L.featureGroup(markers).getBounds(), { padding: [36, 36], maxZoom: 6 });
+    }
+  }
+
   function setupMisc() { const year = $('.current-year'); if (year) year.textContent = String(new Date().getFullYear()); }
 
-  setupTheme(); setupHeader(); setupGallery(); setupHero(); setupLightbox(); setupShareDialog(); setupMobileTabs(); setupMisc();
+  // Astro's ClientRouter fires these around any transition-enhanced
+  // navigation — same-page link clicks, and (given supporting browsers)
+  // full cross-document navigations too, which covers the one real
+  // multi-page hop this site has: a shared /photo/<slug>/ page redirecting
+  // back here. Most navigations here are same-page anchor scrolls (#gallery
+  // etc.), which don't fire these at all, so the bar simply stays inert.
+  function setupNavProgress() {
+    const bar = $('.nav-progress');
+    if (!bar) return;
+    let growTimer = null;
+    document.addEventListener('astro:before-preparation', () => {
+      window.clearTimeout(growTimer);
+      bar.classList.remove('is-done');
+      bar.classList.add('is-active');
+      bar.style.width = '20%';
+      let width = 20;
+      growTimer = window.setInterval(() => {
+        width = Math.min(width + (100 - width) * 0.12, 90);
+        bar.style.width = `${width}%`;
+      }, 180);
+    });
+    document.addEventListener('astro:page-load', () => {
+      window.clearInterval(growTimer);
+      bar.classList.add('is-done');
+      window.setTimeout(() => { bar.classList.remove('is-active', 'is-done'); bar.style.width = '0%'; }, 500);
+    });
+  }
+
+  setupTheme(); setupGrain(); setupHeader(); setupGallery(); setupHero(); setupLightbox(); setupShareDialog(); setupMobileTabs(); setupLocationMap(); setupNavProgress(); setupMisc();
   openSharedPhotoFromUrl();
 })();

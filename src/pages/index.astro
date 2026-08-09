@@ -1,4 +1,5 @@
 ---
+import { ClientRouter } from 'astro:transitions';
 import site from '../data/site.json';
 import { photos } from '../lib/photos.js';
 
@@ -69,12 +70,16 @@ const galleryJson = JSON.stringify(galleryData).replace(/</g, '\\u003c');
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content={site.brand} />
+  <link rel="stylesheet" href={`${base}assets/vendor/leaflet/leaflet.css`} />
   <link rel="stylesheet" href={`${base}assets/styles.css`} />
+  <ClientRouter />
   <script is:inline>
     (function () {
       try {
         const saved = localStorage.getItem('cds-photo-theme');
         if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+        const grain = localStorage.getItem('cds-photo-grain');
+        if (grain === 'off') document.documentElement.dataset.grain = 'off';
       } catch (_) {}
     }());
   </script>
@@ -87,17 +92,24 @@ const galleryJson = JSON.stringify(galleryData).replace(/</g, '\\u003c');
   )}
 </head>
 <body>
+  <div class="nav-progress" aria-hidden="true"></div>
+  <div class="grain-overlay" aria-hidden="true"></div>
   <a class="skip-link" href="#gallery">Skip to gallery</a>
 
   <header class="site-header" id="top">
     <a class="brand" href="#featured" aria-label={`${site.title} home`}>
       <span class="brand-mark" aria-hidden="true"></span><span>{site.brand}</span>
     </a>
-    <nav class="main-nav" aria-label="Primary navigation"><a href="#gallery">Gallery</a><a href="#about">About</a></nav>
-    <button class="icon-button theme-toggle" type="button" aria-label="Switch color theme" title="Switch color theme">
-      <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"></path></svg>
-      <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.3 15.7A8.5 8.5 0 0 1 8.3 3.7 8.5 8.5 0 1 0 20.3 15.7Z"></path></svg>
-    </button>
+    <nav class="main-nav" aria-label="Primary navigation"><a href="#gallery">Gallery</a><a href="#map">Locations</a><a href="#about">About</a></nav>
+    <div class="header-actions">
+      <button class="icon-button grain-toggle" type="button" aria-label="Toggle film grain" title="Toggle film grain">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="7" r=".9" fill="currentColor" stroke="none"></circle><circle cx="12" cy="5.5" r=".9" fill="currentColor" stroke="none"></circle><circle cx="17.5" cy="8.5" r=".9" fill="currentColor" stroke="none"></circle><circle cx="8" cy="13" r=".9" fill="currentColor" stroke="none"></circle><circle cx="15" cy="14" r=".9" fill="currentColor" stroke="none"></circle><circle cx="6.5" cy="18" r=".9" fill="currentColor" stroke="none"></circle><circle cx="13" cy="19" r=".9" fill="currentColor" stroke="none"></circle><circle cx="18" cy="17" r=".9" fill="currentColor" stroke="none"></circle></svg>
+      </button>
+      <button class="icon-button theme-toggle" type="button" aria-label="Switch color theme" title="Switch color theme">
+        <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"></path></svg>
+        <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.3 15.7A8.5 8.5 0 0 1 8.3 3.7 8.5 8.5 0 1 0 20.3 15.7Z"></path></svg>
+      </button>
+    </div>
   </header>
 
   <section class="hero" id="featured" aria-label="Featured photographs">
@@ -139,6 +151,11 @@ const galleryJson = JSON.stringify(galleryData).replace(/</g, '\\u003c');
       <div class="gallery-grid" aria-live="polite"></div>
       <div class="gallery-empty" hidden><p>No photographs match these tags.</p></div>
       <div class="show-more-wrap" hidden><button class="show-more" type="button">Show more</button></div>
+    </section>
+
+    <section class="map-section" id="map" aria-labelledby="map-title">
+      <div class="section-heading"><div><p class="eyebrow">Field notes</p><h2 id="map-title">Where these were taken</h2></div></div>
+      <div id="location-map" class="location-map" role="img" aria-label="Map showing the locations photographs in this collection were taken"></div>
     </section>
 
     <section class="about-section" id="about" aria-labelledby="about-title">
@@ -223,6 +240,7 @@ const galleryJson = JSON.stringify(galleryData).replace(/</g, '\\u003c');
   </dialog>
 
   <script is:inline set:html={`window.CDS_PHOTO_DATA = ${galleryJson};`}></script>
+  <script is:inline src={`${base}assets/vendor/leaflet/leaflet.js`}></script>
   <script is:inline src={`${base}assets/app.js`}></script>
   <script is:inline src={`${base}assets/pwa.js`}></script>
 </body>

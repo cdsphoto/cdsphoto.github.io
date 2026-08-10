@@ -31,9 +31,11 @@ const jsonLd = {
 };
 const jsonLdString = JSON.stringify(jsonLd).replace(/</g, '\\u003c');
 const analytics = site.analytics || {};
+const instagram = site.socialLinks?.find((link) => link.label === 'Instagram') || site.socialLinks?.[0];
 const galleryData = {
   photos,
   base,
+  instagramUrl: instagram?.url || '',
   settings: {
     heroInterval: site.heroInterval,
     galleryBatchSize: site.galleryBatchSize,
@@ -245,7 +247,7 @@ const galleryJson = JSON.stringify(galleryData).replace(/</g, '\\u003c');
     <div class="lightbox-shell">
       <header class="lightbox-header"><div class="lightbox-counter" aria-live="polite"></div><div class="lightbox-header-actions"><button class="icon-button lightbox-share" type="button" aria-label="Share this photograph"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 10.5 15.4 6.8M8.6 13.5l6.8 3.7"></path></svg></button><button class="icon-button lightbox-close" type="button" aria-label="Close photograph viewer" data-lightbox-close><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></div></header>
       <div class="lightbox-media"><button class="lightbox-nav lightbox-prev" type="button" aria-label="Previous photograph"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18 9 12l6-6"></path></svg></button><img class="lightbox-image" src="" alt="" /><button class="lightbox-nav lightbox-next" type="button" aria-label="Next photograph"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button></div>
-      <footer class="lightbox-caption"><div class="lightbox-caption-main"><p class="lightbox-title"></p><p class="lightbox-description"></p><p class="lightbox-detail"></p><p class="lightbox-technical"></p></div><div class="lightbox-tags"></div></footer>
+      <footer class="lightbox-caption"><div class="lightbox-caption-main"><p class="lightbox-title"></p><p class="lightbox-description"></p><p class="lightbox-detail"></p><p class="lightbox-technical"></p></div><div class="lightbox-caption-side"><div class="lightbox-tags"></div><a class="lightbox-inquiry" href="#" target="_blank" rel="noopener" hidden>Request this print</a></div></footer>
     </div>
   </dialog>
 

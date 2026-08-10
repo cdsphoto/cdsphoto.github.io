@@ -4,6 +4,7 @@
   const DATA = window.CDS_PHOTO_DATA || { photos: [], settings: {} };
   const rawPhotos = Array.isArray(DATA.photos) ? DATA.photos : [];
   const BASE_PATH = typeof DATA.base === 'string' && DATA.base ? DATA.base : '/';
+  const INSTAGRAM_URL = typeof DATA.instagramUrl === 'string' ? DATA.instagramUrl : '';
   const settings = DATA.settings || {};
   const HERO_INTERVAL = Math.max(3500, Number(settings.heroInterval) || 7000);
   const BATCH_SIZE = Math.max(12, Number(settings.galleryBatchSize) || 36);
@@ -47,6 +48,7 @@
   const lightboxDetail = $('.lightbox-detail');
   const lightboxTechnical = $('.lightbox-technical');
   const lightboxTags = $('.lightbox-tags');
+  const lightboxInquiry = $('.lightbox-inquiry');
   const lightboxCounter = $('.lightbox-counter');
   const lightboxPrev = $('.lightbox-prev');
   const lightboxNext = $('.lightbox-next');
@@ -635,6 +637,15 @@
     if (lightboxDetail) lightboxDetail.textContent = detailLine(photo);
     if (lightboxTechnical) lightboxTechnical.textContent = [technicalLine(photo), 'Loading full resolution…'].filter(Boolean).join(' · ');
     renderTagContainer(lightboxTags, photo.tags);
+    if (lightboxInquiry) {
+      if (INSTAGRAM_URL) {
+        lightboxInquiry.hidden = false;
+        lightboxInquiry.href = INSTAGRAM_URL;
+        lightboxInquiry.dataset.inquiryMessage = `Hi! I'm interested in a print or license of your photo "${photo.title}" — ${buildShareUrl(photo)}`;
+      } else {
+        lightboxInquiry.hidden = true;
+      }
+    }
     if (lightboxCounter) lightboxCounter.textContent = `${pad(lightboxIndex + 1)} / ${pad(filteredPhotos.length)}`;
     if (lightboxPrev) lightboxPrev.hidden = filteredPhotos.length < 2;
     if (lightboxNext) lightboxNext.hidden = filteredPhotos.length < 2;
@@ -802,6 +813,15 @@
     lightboxPrev?.addEventListener('click', () => lightboxStep(-1));
     lightboxNext?.addEventListener('click', () => lightboxStep(1));
     lightboxShare?.addEventListener('click', () => sharePhoto(filteredPhotos[lightboxIndex]));
+    // Instagram has no URL-based way to pre-fill a DM's text, unlike a mailto
+    // link — copying the message is the next best thing so there's something
+    // ready to paste once the visitor's own DM composer opens.
+    lightboxInquiry?.addEventListener('click', () => {
+      const message = lightboxInquiry.dataset.inquiryMessage;
+      if (message && navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(message).then(() => toast('Message copied — paste it in your DM')).catch(() => {});
+      }
+    });
     document.addEventListener('keydown', event => {
       if (!lightbox?.open) return;
       if (event.key === 'Escape') closeLightbox();

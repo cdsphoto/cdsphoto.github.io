@@ -2312,6 +2312,13 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
   font-size: 11px;
 }
 
+.lightbox-caption-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
 .lightbox-tags {
   display: flex;
   flex-wrap: wrap;
@@ -2321,6 +2328,27 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
 
 .lightbox-tags .photo-tag {
   background: rgba(255, 255, 255, .08);
+}
+
+.lightbox-inquiry {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, .22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .08);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background 180ms ease, transform 180ms var(--ease);
+}
+
+.lightbox-inquiry:hover {
+  background: rgba(255, 255, 255, .16);
+  transform: translateY(-1px);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -2610,9 +2638,13 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
     padding: 16px 6px 0;
   }
 
+  .lightbox-caption-side {
+    align-items: flex-start;
+    margin-top: 12px;
+  }
+
   .lightbox-tags {
     justify-content: flex-start;
-    margin-top: 12px;
   }
 
   .mobile-tabbar {

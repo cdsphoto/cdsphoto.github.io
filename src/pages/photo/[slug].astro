@@ -35,14 +35,38 @@ const jsonLd = {
   ...(photo.location ? { contentLocation: { '@type': 'Place', name: photo.location } } : {}),
 };
 const jsonLdString = JSON.stringify(jsonLd).replace(/</g, '\\u003c');
+
+// Story-flow navigation through the same curated order the homepage
+// gallery uses (photos is already sorted by `order` — see photos.js),
+// wrapping around at either end so it reads as one continuous portfolio.
+const index = photos.findIndex((p) => p.slug === photo.slug);
+const prevPhoto = photos[(index - 1 + photos.length) % photos.length];
+const nextPhoto = photos[(index + 1) % photos.length];
+
+// Related work: other photos sharing the most tags with this one, ties
+// broken by curated order. Purely a build-time computation — no client JS.
+const related = photos
+  .filter((p) => p.slug !== photo.slug)
+  .map((p) => ({ photo: p, shared: p.tags.filter((t) => photo.tags.includes(t)).length }))
+  .filter((entry) => entry.shared > 0)
+  .sort((a, b) => b.shared - a.shared || a.photo.order - b.photo.order)
+  .slice(0, 6)
+  .map((entry) => entry.photo);
+
+const detailBits = [photo.location, photo.year].filter(Boolean);
+const instagram = site.socialLinks?.find((link) => link.label === 'Instagram') || site.socialLinks?.[0];
+const inquiryMessage = `Hi! I'm interested in a print or license of your photo "${photo.title}" — ${canonicalUrl}`;
 ---
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="system">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0c0e" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)" />
   <title>{photo.title} — {site.title}</title>
   <meta name="description" content={description} />
+  <meta name="color-scheme" content="light dark" />
   <link rel="canonical" href={canonicalUrl} />
 
   <meta property="og:type" content="article" />
@@ -59,29 +83,124 @@ const jsonLdString = JSON.stringify(jsonLd).replace(/</g, '\\u003c');
   <meta name="twitter:image" content={ogImageUrl} />
 
   <link rel="icon" type="image/png" sizes="32x32" href={`${base}assets/favicon-32.png`} />
+  <link rel="icon" type="image/png" sizes="16x16" href={`${base}assets/favicon-16.png`} />
+  <link rel="apple-touch-icon" href={`${base}assets/apple-touch-icon.png`} />
+  <link rel="manifest" href={`${base}manifest.webmanifest`} />
+  <link rel="stylesheet" href={`${base}assets/styles.css`} />
+  <script is:inline>
+    (function () {
+      try {
+        const saved = localStorage.getItem('cds-photo-theme');
+        if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+      } catch (_) {}
+    }());
+  </script>
   <script type="application/ld+json" set:html={jsonLdString}></script>
   <ClientRouter />
-
-  <!--
-    No analytics beacon on this page: it redirects in well under the time an
-    async/deferred script needs to load and fire, so a beacon here would
-    rarely get a chance to record anything. The homepage's beacon records
-    the visit instead, once the redirect below lands there with ?photo=
-    still in the URL.
-  -->
-  <!--
-    This page exists purely so link-preview crawlers (which fetch plain HTML
-    and never run JavaScript) see this exact photo's own title/description/
-    image in the Open Graph tags above, instead of the whole site's generic
-    card. Real visitors get redirected straight into the interactive gallery
-    with this photo already open in the viewer.
-  -->
-  <meta http-equiv="refresh" content={`0; url=${galleryUrl}`} />
-  <script is:inline define:vars={{ galleryUrl }}>
-    window.location.replace(galleryUrl);
-  </script>
 </head>
-<body>
-  <p>Opening <a href={galleryUrl}>{photo.title}</a>…</p>
+<body class="story-page">
+  <header class="story-header">
+    <a class="brand" href={base} aria-label={`${site.title} home`}>
+      <span class="brand-mark" aria-hidden="true"></span><span>{site.brand}</span>
+    </a>
+    <a class="story-header-link" href={`${base}#gallery`}>All photographs</a>
+  </header>
+
+  <main class="story-main">
+    <figure class="story-figure">
+      <picture>
+        <source media="(max-width: 700px)" srcset={photo.heroMobileSrc} />
+        <img
+          src={photo.heroSrc}
+          alt={photo.alt}
+          width={photo.width || undefined}
+          height={photo.height || undefined}
+          fetchpriority="high"
+        />
+      </picture>
+    </figure>
+
+    <div class="story-body">
+      <div class="story-copy">
+        <p class="eyebrow">{detailBits.join(' · ') || 'Photograph'}</p>
+        <h1>{photo.title}</h1>
+        {description && <p class="story-description">{description}</p>}
+        {photo.tags.length > 0 && (
+          <div class="story-tags">
+            {photo.tags.map((tag) => <span class="photo-tag">{tag}</span>)}
+          </div>
+        )}
+      </div>
+
+      <div class="story-actions">
+        <a class="story-action story-action-primary" href={galleryUrl}>Open in gallery viewer</a>
+        <a class="story-action" href={photo.originalSrc} target="_blank" rel="noopener">
+          Full resolution{photo.width && photo.height ? ` (${photo.width} × ${photo.height})` : ''}
+        </a>
+        {instagram && (
+          <a
+            class="story-action story-action-inquiry"
+            href={instagram.url}
+            target="_blank"
+            rel="noopener"
+            data-inquiry-message={inquiryMessage}
+          >
+            Request this print
+          </a>
+        )}
+      </div>
+    </div>
+
+    <nav class="story-pager" aria-label="Adjacent photographs">
+      <a class="story-pager-link story-pager-prev" href={`${base}photo/${prevPhoto.slug}/`}>
+        <span class="story-pager-eyebrow">← Previous</span>
+        <span class="story-pager-title">{prevPhoto.title}</span>
+      </a>
+      <a class="story-pager-link story-pager-next" href={`${base}photo/${nextPhoto.slug}/`}>
+        <span class="story-pager-eyebrow">Next →</span>
+        <span class="story-pager-title">{nextPhoto.title}</span>
+      </a>
+    </nav>
+
+    {related.length > 0 && (
+      <section class="story-related" aria-labelledby="related-heading">
+        <p class="eyebrow" id="related-heading">More like this</p>
+        <div class="story-related-grid">
+          {related.map((r) => (
+            <a class="story-related-card" href={`${base}photo/${r.slug}/`}>
+              <img src={r.previewSrc} srcset={r.previewSrcSet || undefined} alt="" loading="lazy" />
+              <span>{r.title}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+  </main>
+
+  <footer class="site-footer story-footer">
+    <a class="brand footer-brand" href={base}><span class="brand-mark" aria-hidden="true"></span><span>{site.brand}</span></a>
+    <p>© {new Date().getFullYear()} {site.title}. All photographs reserved.</p>
+  </footer>
+
+  <div class="toast" role="status" aria-live="polite"></div>
+
+  <script is:inline>
+    (function () {
+      const button = document.querySelector('.story-action-inquiry');
+      const toast = document.querySelector('.toast');
+      if (!button) return;
+      button.addEventListener('click', function () {
+        const message = button.dataset.inquiryMessage;
+        if (message && navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(message).then(function () {
+            if (!toast) return;
+            toast.textContent = 'Message copied — paste it in your DM';
+            toast.classList.add('is-visible');
+            window.setTimeout(function () { toast.classList.remove('is-visible'); }, 2600);
+          }).catch(function () {});
+        }
+      });
+    }());
+  </script>
 </body>
 </html>

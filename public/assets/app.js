@@ -155,17 +155,17 @@
     themeToggle?.addEventListener('click', () => setTheme(html.dataset.resolvedTheme === 'dark' ? 'light' : 'dark'));
   }
 
-  function setupGrain() {
-    const grainToggle = $('.grain-toggle');
+  function setupWarmth() {
+    const warmthToggle = $('.warmth-toggle');
     let saved = null;
-    try { saved = localStorage.getItem('cds-photo-grain'); } catch (_) {}
-    html.dataset.grain = saved === 'off' ? 'off' : 'on';
-    grainToggle?.setAttribute('aria-pressed', String(html.dataset.grain === 'on'));
-    grainToggle?.addEventListener('click', () => {
-      const next = html.dataset.grain === 'off' ? 'on' : 'off';
-      html.dataset.grain = next;
-      grainToggle.setAttribute('aria-pressed', String(next === 'on'));
-      try { localStorage.setItem('cds-photo-grain', next); } catch (_) {}
+    try { saved = localStorage.getItem('cds-photo-warmth'); } catch (_) {}
+    html.dataset.warmth = saved === 'off' ? 'off' : 'on';
+    warmthToggle?.setAttribute('aria-pressed', String(html.dataset.warmth === 'on'));
+    warmthToggle?.addEventListener('click', () => {
+      const next = html.dataset.warmth === 'off' ? 'on' : 'off';
+      html.dataset.warmth = next;
+      warmthToggle.setAttribute('aria-pressed', String(next === 'on'));
+      try { localStorage.setItem('cds-photo-warmth', next); } catch (_) {}
     });
   }
 
@@ -1120,6 +1120,6 @@
     });
   }
 
-  setupTheme(); setupGrain(); setupHeader(); setupGallery(); setupHero(); setupLightbox(); setupShareDialog(); setupMobileTabs(); setupLocationMap(); setupNavProgress(); setupMisc();
+  setupTheme(); setupWarmth(); setupHeader(); setupGallery(); setupHero(); setupLightbox(); setupShareDialog(); setupMobileTabs(); setupLocationMap(); setupNavProgress(); setupMisc();
   openSharedPhotoFromUrl();
 })();

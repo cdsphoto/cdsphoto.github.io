@@ -770,179 +770,304 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
   text-transform: uppercase;
 }
 
-.filter-row-wrap {
-  position: relative;
-  margin: 0 0 10px;
-}
-
-.filter-row {
-  position: relative;
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 8px;
-  width: 100%;
-  max-width: 100%;
-  padding: 8px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  overscroll-behavior-inline: contain;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(18px) saturate(130%);
-  -webkit-backdrop-filter: blur(18px) saturate(130%);
-  scrollbar-width: none;
-}
-
-.filter-row::-webkit-scrollbar {
-  display: none;
-}
-
-/* A scrim + chevron pinned over each scrollable edge — not part of the
-   scrolling content, so it stays put while chips scroll beneath it. Fades
-   from the page's own opaque --bg toward transparent: a mask-fade of the
-   chip row's own translucent background (tried first) barely registered
-   against a light page, since transparent-on-light-on-light has almost no
-   contrast. An opaque-to-transparent scrim plus a visible arrow reads
-   clearly in both themes regardless of what's behind it. */
-.filter-scroll-hint {
-  position: absolute;
-  z-index: 2;
-  top: 0;
-  bottom: 0;
+.browse-trigger {
   display: flex;
   align-items: center;
-  width: 40px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 200ms ease;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 64px;
+  margin: 0 0 clamp(32px, 4vw, 48px);
+  padding: 14px 20px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  box-shadow: var(--shadow-sm);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: background 180ms ease, transform 180ms var(--ease), box-shadow 180ms ease, color 180ms ease;
 }
 
-.filter-row-wrap.is-scrollable-end .filter-scroll-hint-end,
-.filter-row-wrap.is-scrollable-start .filter-scroll-hint-start {
-  opacity: 1;
+.browse-trigger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .12);
 }
 
-.filter-scroll-hint-end {
-  right: 0;
-  justify-content: flex-end;
-  padding-right: 2px;
-  border-radius: 0 999px 999px 0;
-  background: linear-gradient(to right, transparent, var(--bg) 65%);
+.browse-trigger:active {
+  transform: scale(.99);
 }
 
-.filter-scroll-hint-start {
-  left: 0;
-  justify-content: flex-start;
-  padding-left: 2px;
-  border-radius: 999px 0 0 999px;
-  background: linear-gradient(to left, transparent, var(--bg) 65%);
+.browse-trigger.is-filtered {
+  background: var(--text);
+  color: var(--bg);
+  border-color: transparent;
 }
 
-.filter-scroll-hint svg {
-  width: 16px;
-  height: 16px;
+.browse-trigger-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.browse-trigger-label {
+  overflow: hidden;
+  font-size: 19px;
+  font-weight: 720;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.browse-trigger-sub {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.browse-trigger.is-filtered .browse-trigger-sub {
+  color: color-mix(in srgb, var(--bg) 72%, transparent);
+}
+
+.browse-trigger-icon {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
   fill: none;
-  stroke: var(--text);
+  stroke: currentColor;
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  animation: filterHintNudge 1.8s ease-in-out infinite;
+  transition: transform 180ms var(--ease);
 }
 
-.filter-scroll-hint-start svg {
-  animation-direction: reverse;
+.browse-trigger:hover .browse-trigger-icon {
+  transform: translateX(3px);
 }
 
-@keyframes filterHintNudge {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(3px); }
-}
-
-.filter-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  flex: 0 0 auto;
-  min-height: 46px;
-  padding: 0 10px 0 18px;
+.browse-sheet {
+  width: min(720px, calc(100vw - 32px));
+  max-width: none;
+  max-height: 82vh;
+  margin: auto;
+  padding: 0;
   border: 0;
-  border-radius: 999px;
-  background: transparent;
+  border-radius: var(--radius-xl);
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}
+
+.browse-sheet::backdrop {
+  background: rgba(0, 0, 0, .55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.browse-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+}
+
+.browse-sheet-panel {
+  display: flex;
+  flex-direction: column;
+  max-height: 82vh;
+}
+
+.browse-sheet-header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.browse-sheet-title {
+  margin: 0;
   color: var(--muted-strong);
-  font-size: 14px;
-  font-weight: 700;
-  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 760;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.browse-sheet-grid {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 16px 20px 24px;
+  overflow-y: auto;
+}
+
+.browse-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 108px;
+  padding: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
   cursor: pointer;
-  transition:
-    background 180ms ease,
-    color 180ms ease,
-    transform 180ms var(--ease);
+  transition: transform 160ms var(--ease), border-color 160ms ease, box-shadow 160ms ease;
 }
 
-.filter-chip:hover {
-  background: var(--line);
+.browse-tile:hover {
+  transform: translateY(-2px);
 }
 
-.filter-chip.is-active {
-  background: var(--text);
-  color: var(--bg);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, .16);
-  transform: scale(1.02);
-}
-
-.filter-chip:active {
+.browse-tile:active {
   transform: scale(.97);
 }
 
-.filter-chip-warning:not(.is-active) {
-  color: #a36727;
+.browse-tile-img {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.filter-chip-count {
+.browse-tile-photo::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, .75) 0%, rgba(0, 0, 0, .25) 50%, transparent 75%);
+}
+
+.browse-tile-label,
+.browse-tile-count {
+  position: relative;
+  z-index: 2;
+}
+
+.browse-tile-photo .browse-tile-label {
+  color: #fff;
+}
+
+.browse-tile-label {
+  font-size: 14px;
+  font-weight: 720;
+  letter-spacing: -.01em;
+}
+
+.browse-tile-count {
+  position: absolute;
+  top: 10px;
+  right: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 26px;
-  height: 26px;
-  padding: 0 7px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
   border-radius: 999px;
-  background: var(--line-strong);
-  color: var(--muted-strong);
+  background: rgba(0, 0, 0, .4);
+  backdrop-filter: blur(8px) saturate(150%);
+  -webkit-backdrop-filter: blur(8px) saturate(150%);
+  color: #fff;
   font-size: 11px;
   font-weight: 750;
   font-variant-numeric: tabular-nums;
-  transition: background 180ms ease, color 180ms ease;
 }
 
-.filter-chip.is-active .filter-chip-count {
+.browse-tile:not(.browse-tile-photo) .browse-tile-count {
+  position: static;
+  align-self: flex-start;
+  margin-top: 4px;
+  background: var(--line-strong);
+  backdrop-filter: none;
+  color: var(--muted-strong);
+}
+
+.browse-tile.is-active {
+  border-color: var(--text);
+  box-shadow: 0 0 0 2px var(--text);
+}
+
+.browse-tile-all {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 56px;
+  background: var(--text);
+  border-color: transparent;
+}
+
+.browse-tile-all .browse-tile-label {
+  color: var(--bg);
+  font-size: 16px;
+}
+
+.browse-tile-all .browse-tile-count {
+  position: static;
   background: color-mix(in srgb, var(--bg) 82%, transparent);
   color: var(--text);
 }
 
-/* The chips' own direct payoff line — picking a tag should feel like it
-   visibly did something substantial, not just quietly reshuffle a grid
-   below the fold. Sized closer to a small heading than a caption. */
-.filter-hint {
-  margin: 18px 2px clamp(32px, 4vw, 48px);
-  color: var(--text);
-  font-size: clamp(16px, 2vw, 20px);
-  font-weight: 560;
-  letter-spacing: -.01em;
-  line-height: 1.4;
+.browse-tile-all.is-active {
+  box-shadow: none;
 }
 
-.filter-hint strong {
-  font-weight: 780;
+.browse-tile-untagged {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  color: #a36727;
 }
 
-.filter-hint-tag {
-  color: var(--text);
-  text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--text) 30%, transparent);
-  text-underline-offset: 4px;
-  text-decoration-thickness: 2px;
+@media (max-width: 640px) {
+  .browse-sheet {
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .browse-sheet-panel {
+    max-height: 100dvh;
+  }
+
+  .browse-sheet-header {
+    padding-top: max(20px, env(safe-area-inset-top, 0px));
+  }
+
+  .browse-sheet-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 14px 16px calc(28px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .browse-tile {
+    min-height: 132px;
+  }
+
+  .browse-trigger {
+    min-height: 60px;
+    padding: 12px 16px;
+  }
+
+  .browse-trigger-label {
+    font-size: 17px;
+  }
 }
 
 .gallery-grid {
@@ -2111,11 +2236,6 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
   .gallery-count {
     margin-top: 4px;
     white-space: nowrap;
-  }
-
-  .filter-chip {
-    min-height: 44px;
-    padding: 0 16px;
   }
 
   .gallery-grid {

@@ -140,14 +140,13 @@ const galleryJson = JSON.stringify(galleryData).replace(/</g, '\\u003c');
   <main>
     <section class="gallery-section" id="gallery" aria-labelledby="gallery-title">
       <div class="section-heading"><div><p class="eyebrow">Archive</p><h2 id="gallery-title">The collection</h2></div><p class="gallery-count" aria-live="polite"></p></div>
-      <div class="filter-row-wrap">
-        <div class="filter-row" role="toolbar" aria-label="Filter photographs by tag">
-          <button class="filter-chip is-active" type="button" data-filter="all" aria-pressed="true">All</button>
-        </div>
-        <div class="filter-scroll-hint filter-scroll-hint-start" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 18 9 12l6-6"></path></svg></div>
-        <div class="filter-scroll-hint filter-scroll-hint-end" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"></path></svg></div>
-      </div>
-      <p class="filter-hint">Select a tag to filter the collection.</p>
+      <button class="browse-trigger" type="button" aria-haspopup="dialog" aria-controls="browse-sheet">
+        <span class="browse-trigger-text">
+          <span class="browse-trigger-label">Browse by category</span>
+          <span class="browse-trigger-sub"></span>
+        </span>
+        <svg class="browse-trigger-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+      </button>
       <div class="gallery-grid" aria-live="polite"></div>
       <div class="gallery-empty" hidden><p>No photographs match these tags.</p></div>
       <div class="show-more-wrap" hidden><button class="show-more" type="button">Show more</button></div>
@@ -203,6 +202,17 @@ const galleryJson = JSON.stringify(galleryData).replace(/</g, '\\u003c');
           <span>Email</span>
         </a>
       </div>
+    </div>
+  </dialog>
+
+  <dialog id="browse-sheet" class="browse-sheet" aria-label="Browse photographs by category">
+    <div class="browse-sheet-backdrop" data-browse-close></div>
+    <div class="browse-sheet-panel">
+      <header class="browse-sheet-header">
+        <p class="browse-sheet-title">Categories</p>
+        <button class="icon-button browse-sheet-close" type="button" aria-label="Close category browser" data-browse-close><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+      </header>
+      <div class="browse-sheet-grid" role="toolbar" aria-label="Filter photographs by tag"></div>
     </div>
   </dialog>
 

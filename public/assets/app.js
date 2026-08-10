@@ -15,9 +15,11 @@
   const header = $('.site-header');
   const themeToggle = $('.theme-toggle');
   const galleryGrid = $('.gallery-grid');
-  const filterRow = $('.filter-row');
-  const filterRowWrap = $('.filter-row-wrap');
-  const filterHint = $('.filter-hint');
+  const browseTrigger = $('.browse-trigger');
+  const browseTriggerLabel = $('.browse-trigger-label');
+  const browseTriggerSub = $('.browse-trigger-sub');
+  const browseSheet = $('#browse-sheet');
+  const browseSheetGrid = $('.browse-sheet-grid');
   const galleryCount = $('.gallery-count');
   const galleryEmpty = $('.gallery-empty');
   const showMoreWrap = $('.show-more-wrap');
@@ -182,59 +184,59 @@
     return [...counts.keys()].sort((a, b) => counts.get(b) - counts.get(a) || a.localeCompare(b));
   }
 
-  // Fades whichever edge(s) of the tag row still have more chips to reveal,
-  // as a visual hint that it scrolls — a row that ends flush at the edge
-  // otherwise looks complete with nothing suggesting there's more.
-  function updateFilterRowFade() {
-    if (!filterRow || !filterRowWrap) return;
-    const canScrollLeft = filterRow.scrollLeft > 1;
-    const canScrollRight = filterRow.scrollLeft + filterRow.clientWidth < filterRow.scrollWidth - 1;
-    filterRowWrap.classList.toggle('is-scrollable-start', canScrollLeft);
-    filterRowWrap.classList.toggle('is-scrollable-end', canScrollRight);
+  function representativePhoto(tag) {
+    return photos.find(photo => photo.tags.includes(tag));
   }
 
-  function appendChipCount(button, count) {
-    const badge = document.createElement('span');
-    badge.className = 'filter-chip-count';
-    badge.textContent = String(count);
-    button.appendChild(badge);
+  function createBrowseTile(filter, label, count, opts = {}) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'browse-tile';
+    button.dataset.filter = filter;
+    button.setAttribute('aria-pressed', 'false');
+
+    if (opts.photo) {
+      button.classList.add('browse-tile-photo');
+      const img = document.createElement('img');
+      img.className = 'browse-tile-img';
+      img.loading = 'lazy';
+      img.alt = '';
+      img.src = opts.photo.previewSrc;
+      if (opts.photo.previewSrcSet) img.srcset = opts.photo.previewSrcSet;
+      button.appendChild(img);
+    }
+    if (opts.variant) button.classList.add(`browse-tile-${opts.variant}`);
+
+    const labelEl = document.createElement('span');
+    labelEl.className = 'browse-tile-label';
+    labelEl.textContent = label;
+    const countEl = document.createElement('span');
+    countEl.className = 'browse-tile-count';
+    countEl.textContent = String(count);
+    button.append(labelEl, countEl);
+    return button;
   }
 
-  function renderFilters() {
-    if (!filterRow) return;
+  function renderBrowseSheet() {
+    if (!browseSheetGrid) return;
     const counts = tagCounts();
-    const tags = allTags();
+    const tags = allTags(); // already sorted by count desc, alpha tiebreak
 
-    const allButton = $('.filter-chip[data-filter="all"]', filterRow);
-    if (allButton) appendChipCount(allButton, photos.length);
+    browseSheetGrid.replaceChildren();
+    browseSheetGrid.appendChild(createBrowseTile('all', 'All photographs', photos.length, { variant: 'all' }));
 
     tags.forEach(tag => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'filter-chip';
-      button.dataset.filter = tag;
-      button.setAttribute('aria-pressed', 'false');
-      button.append(document.createTextNode(tag));
-      appendChipCount(button, counts.get(tag) || 0);
-      filterRow.appendChild(button);
+      browseSheetGrid.appendChild(
+        createBrowseTile(tag, tag, counts.get(tag) || 0, { photo: representativePhoto(tag) })
+      );
     });
+
     const untaggedCount = photos.filter(photo => photo.tags.length === 0).length;
     if (untaggedCount > 0) {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'filter-chip filter-chip-warning';
-      button.dataset.filter = '__untagged__';
-      button.setAttribute('aria-pressed', 'false');
-      button.append(document.createTextNode('Untagged'));
-      appendChipCount(button, untaggedCount);
-      filterRow.appendChild(button);
+      browseSheetGrid.appendChild(createBrowseTile('__untagged__', 'Untagged', untaggedCount, { variant: 'untagged' }));
     }
 
-    updateFilterRowFade();
-    filterRow.addEventListener('scroll', updateFilterRowFade, { passive: true });
-    window.addEventListener('resize', updateFilterRowFade, { passive: true });
-
-    filterRow.addEventListener('click', event => {
+    browseSheetGrid.addEventListener('click', event => {
       const button = event.target.closest('[data-filter]');
       if (!button) return;
       const filter = button.dataset.filter;
@@ -242,49 +244,58 @@
       // clicking a different tag replaces whichever one was active.
       activeTag = filter === 'all' || filter === activeTag ? null : filter;
       visibleCount = BATCH_SIZE;
-      syncFilterButtons();
+      syncBrowseTiles();
       renderGallery();
-      updateFilterStatus();
+      updateBrowseTrigger();
+      closeBrowseSheet();
     });
 
-    updateFilterStatus();
+    updateBrowseTrigger();
   }
 
-  function syncFilterButtons() {
-    $$('.filter-chip', filterRow).forEach(chip => {
-      const filter = chip.dataset.filter;
+  function syncBrowseTiles() {
+    if (!browseSheetGrid) return;
+    $$('.browse-tile', browseSheetGrid).forEach(tile => {
+      const filter = tile.dataset.filter;
       const active = filter === 'all' ? activeTag === null : filter === activeTag;
-      chip.classList.toggle('is-active', active);
-      chip.setAttribute('aria-pressed', String(active));
+      tile.classList.toggle('is-active', active);
+      tile.setAttribute('aria-pressed', String(active));
     });
   }
 
-  // The filter chips need their own direct, prominent payoff line, not just
-  // the small muted count already sitting up by the section heading —
-  // otherwise picking a tag has no visible weight of its own and reads as
-  // if it barely does anything.
-  function updateFilterStatus() {
-    if (!filterHint) return;
-    filterHint.replaceChildren();
-    const matchCount = document.createElement('strong');
+  // The trigger needs its own direct, prominent payoff line, not just the
+  // small muted count already sitting up by the section heading — otherwise
+  // picking a category has no visible weight of its own and reads as if it
+  // barely does anything.
+  function updateBrowseTrigger() {
+    if (!browseTrigger || !browseTriggerLabel || !browseTriggerSub) return;
     if (activeTag === null) {
-      matchCount.textContent = String(photos.length);
-      filterHint.append(matchCount, document.createTextNode(' photographs across '));
-      const tagCount = document.createElement('strong');
-      tagCount.textContent = String(allTags().length);
-      filterHint.append(tagCount, document.createTextNode(' categories — tap a tag to explore.'));
+      browseTrigger.classList.remove('is-filtered');
+      browseTriggerLabel.textContent = 'Browse by category';
+      const tagCount = allTags().length;
+      browseTriggerSub.textContent = `${tagCount} collection${tagCount === 1 ? '' : 's'} · ${photos.length} photographs`;
       return;
     }
     const label = activeTag === '__untagged__' ? 'Untagged' : activeTag;
-    matchCount.textContent = String(filteredPhotos.length);
-    filterHint.append(matchCount, document.createTextNode(' of '));
-    const total = document.createElement('strong');
-    total.textContent = String(photos.length);
-    filterHint.append(total, document.createTextNode(' photographs — '));
-    const tagLabel = document.createElement('strong');
-    tagLabel.className = 'filter-hint-tag';
-    tagLabel.textContent = label;
-    filterHint.append(tagLabel, document.createTextNode('.'));
+    browseTrigger.classList.add('is-filtered');
+    browseTriggerLabel.textContent = label;
+    browseTriggerSub.textContent = `${filteredPhotos.length} of ${photos.length} photographs — tap to change`;
+  }
+
+  function openBrowseSheet() {
+    if (!browseSheet) return;
+    syncBrowseTiles();
+    if (typeof browseSheet.showModal === 'function') browseSheet.showModal(); else browseSheet.setAttribute('open', '');
+  }
+
+  function closeBrowseSheet() {
+    if (!browseSheet) return;
+    if (typeof browseSheet.close === 'function' && browseSheet.open) browseSheet.close(); else browseSheet.removeAttribute('open');
+  }
+
+  function setupBrowseSheet() {
+    browseTrigger?.addEventListener('click', openBrowseSheet);
+    $$('[data-browse-close]').forEach(el => el.addEventListener('click', closeBrowseSheet));
   }
 
   function matchesActiveTags(photo) {
@@ -421,7 +432,8 @@
   }
 
   function setupGallery() {
-    renderFilters();
+    renderBrowseSheet();
+    setupBrowseSheet();
     renderGallery();
     galleryGrid?.addEventListener('click', event => {
       const card = event.target.closest('.gallery-card');

@@ -3,6 +3,22 @@
 
   // Register the service worker (relative to this page, so it works at any base).
   if ('serviceWorker' in navigator) {
+    // A page already open when a new deploy lands keeps running the JS it
+    // already loaded into memory — clients.claim() in sw.js lets the new
+    // worker start controlling that tab, but it can't retroactively re-run
+    // already-executed <script> tags. Without this, a visitor with the tab
+    // open across a deploy sees stale behavior with no indication anything
+    // changed. This reloads once when that handoff happens, picking up the
+    // fresh page automatically. Safe on a first-ever visit: a page is only
+    // ever "controlled" by a service worker that was already active before
+    // that page's own initial load, so controllerchange only fires here on
+    // an actual old-to-new handoff, never on first install.
+    let refreshedForUpdate = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshedForUpdate) return;
+      refreshedForUpdate = true;
+      window.location.reload();
+    });
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     });

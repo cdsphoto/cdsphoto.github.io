@@ -904,11 +904,16 @@
       img.style.transition = 'transform 220ms var(--ease-out), opacity 220ms ease';
 
       if (axis === 'x' && Math.abs(dx) > 70 && filteredPhotos.length > 1) {
-        const dir = dx < 0 ? 1 : -1;
-        const flyoutX = dir * window.innerWidth * 1.1;
+        // The outgoing photo must keep flying out the way the finger was
+        // already dragging it (dragDir) — not the opposite way. Which photo
+        // that reveals (stepDir) is the inverse: dragging right uncovers
+        // the previous photo, as if it were sitting to the left underneath.
+        const dragDir = dx < 0 ? -1 : 1;
+        const stepDir = dx < 0 ? 1 : -1;
+        const flyoutX = dragDir * window.innerWidth * 1.1;
         setTransform(flyoutX, 0, 0);
         window.setTimeout(() => {
-          lightboxStep(dir);
+          lightboxStep(stepDir);
           img.style.transition = 'none';
           setTransform(-flyoutX * 0.5, 0, 0);
           void img.offsetWidth; // force reflow so the next transition actually animates

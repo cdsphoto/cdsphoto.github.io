@@ -17,11 +17,6 @@
   const header = $('.site-header');
   const themeToggle = $('.theme-toggle');
   const galleryGrid = $('.gallery-grid');
-  const browseTrigger = $('.browse-trigger');
-  const browseTriggerLabel = $('.browse-trigger-label');
-  const browseTriggerSub = $('.browse-trigger-sub');
-  const browseSheet = $('#browse-sheet');
-  const browseSheetGrid = $('.browse-sheet-grid');
   const surpriseTrigger = $('.surprise-trigger');
   const galleryCount = $('.gallery-count');
   const galleryEmpty = $('.gallery-empty');
@@ -62,7 +57,6 @@
   const shareCopyBtn = $('.share-copy-btn');
   const shareTargets = $$('.share-target');
 
-  let activeTag = null;
   let visibleCount = BATCH_SIZE;
   let filteredPhotos = [];
   let lightboxIndex = 0;
@@ -173,140 +167,6 @@
     const updateHeader = () => header?.classList.toggle('is-scrolled', window.scrollY > 24);
     updateHeader();
     window.addEventListener('scroll', updateHeader, { passive: true });
-  }
-
-  function tagCounts() {
-    const counts = new Map();
-    for (const photo of photos) {
-      for (const tag of photo.tags) counts.set(tag, (counts.get(tag) || 0) + 1);
-    }
-    return counts;
-  }
-
-  function allTags() {
-    const counts = tagCounts();
-    // Most-photographed subjects first; alphabetical as a tiebreaker for stability.
-    return [...counts.keys()].sort((a, b) => counts.get(b) - counts.get(a) || a.localeCompare(b));
-  }
-
-  function representativePhoto(tag) {
-    return photos.find(photo => photo.tags.includes(tag));
-  }
-
-  function createBrowseTile(filter, label, count, opts = {}) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'browse-tile';
-    button.dataset.filter = filter;
-    button.setAttribute('aria-pressed', 'false');
-
-    if (opts.photo) {
-      button.classList.add('browse-tile-photo');
-      const img = document.createElement('img');
-      img.className = 'browse-tile-img';
-      img.loading = 'lazy';
-      img.alt = '';
-      img.src = opts.photo.previewSrc;
-      if (opts.photo.previewSrcSet) img.srcset = opts.photo.previewSrcSet;
-      button.appendChild(img);
-    }
-    if (opts.variant) button.classList.add(`browse-tile-${opts.variant}`);
-
-    const labelEl = document.createElement('span');
-    labelEl.className = 'browse-tile-label';
-    labelEl.textContent = label;
-    const countEl = document.createElement('span');
-    countEl.className = 'browse-tile-count';
-    countEl.textContent = String(count);
-    button.append(labelEl, countEl);
-    return button;
-  }
-
-  function renderBrowseSheet() {
-    if (!browseSheetGrid) return;
-    const counts = tagCounts();
-    const tags = allTags(); // already sorted by count desc, alpha tiebreak
-
-    browseSheetGrid.replaceChildren();
-    browseSheetGrid.appendChild(createBrowseTile('all', 'All photographs', photos.length, { variant: 'all' }));
-
-    tags.forEach(tag => {
-      browseSheetGrid.appendChild(
-        createBrowseTile(tag, tag, counts.get(tag) || 0, { photo: representativePhoto(tag) })
-      );
-    });
-
-    const untaggedCount = photos.filter(photo => photo.tags.length === 0).length;
-    if (untaggedCount > 0) {
-      browseSheetGrid.appendChild(createBrowseTile('__untagged__', 'Untagged', untaggedCount, { variant: 'untagged' }));
-    }
-
-    browseSheetGrid.addEventListener('click', event => {
-      const button = event.target.closest('[data-filter]');
-      if (!button) return;
-      const filter = button.dataset.filter;
-      // Single-select: clicking the active tag (or "All") clears the filter;
-      // clicking a different tag replaces whichever one was active.
-      activeTag = filter === 'all' || filter === activeTag ? null : filter;
-      visibleCount = BATCH_SIZE;
-      syncBrowseTiles();
-      renderGallery();
-      updateBrowseTrigger();
-      closeBrowseSheet();
-    });
-
-    updateBrowseTrigger();
-  }
-
-  function syncBrowseTiles() {
-    if (!browseSheetGrid) return;
-    $$('.browse-tile', browseSheetGrid).forEach(tile => {
-      const filter = tile.dataset.filter;
-      const active = filter === 'all' ? activeTag === null : filter === activeTag;
-      tile.classList.toggle('is-active', active);
-      tile.setAttribute('aria-pressed', String(active));
-    });
-  }
-
-  // The trigger needs its own direct, prominent payoff line, not just the
-  // small muted count already sitting up by the section heading — otherwise
-  // picking a category has no visible weight of its own and reads as if it
-  // barely does anything.
-  function updateBrowseTrigger() {
-    if (!browseTrigger || !browseTriggerLabel || !browseTriggerSub) return;
-    if (activeTag === null) {
-      browseTrigger.classList.remove('is-filtered');
-      browseTriggerLabel.textContent = 'Browse by category';
-      const tagCount = allTags().length;
-      browseTriggerSub.textContent = `${tagCount} collection${tagCount === 1 ? '' : 's'} · ${photos.length} photographs`;
-      return;
-    }
-    const label = activeTag === '__untagged__' ? 'Untagged' : activeTag;
-    browseTrigger.classList.add('is-filtered');
-    browseTriggerLabel.textContent = label;
-    browseTriggerSub.textContent = `${filteredPhotos.length} of ${photos.length} photographs — tap to change`;
-  }
-
-  function openBrowseSheet() {
-    if (!browseSheet) return;
-    syncBrowseTiles();
-    if (typeof browseSheet.showModal === 'function') browseSheet.showModal(); else browseSheet.setAttribute('open', '');
-  }
-
-  function closeBrowseSheet() {
-    if (!browseSheet) return;
-    if (typeof browseSheet.close === 'function' && browseSheet.open) browseSheet.close(); else browseSheet.removeAttribute('open');
-  }
-
-  function setupBrowseSheet() {
-    browseTrigger?.addEventListener('click', openBrowseSheet);
-    $$('[data-browse-close]').forEach(el => el.addEventListener('click', closeBrowseSheet));
-  }
-
-  function matchesActiveTags(photo) {
-    if (activeTag === null) return true;
-    if (activeTag === '__untagged__') return photo.tags.length === 0;
-    return photo.tags.includes(activeTag);
   }
 
   function createTagPill(tag) {
@@ -427,7 +287,7 @@
 
   function renderGallery() {
     if (!galleryGrid) return;
-    filteredPhotos = photos.filter(matchesActiveTags);
+    filteredPhotos = photos;
     const toRender = filteredPhotos.slice(0, visibleCount);
     galleryGrid.replaceChildren(...toRender.map(createGalleryCard));
     revealNewCards();
@@ -437,8 +297,6 @@
   }
 
   function setupGallery() {
-    renderBrowseSheet();
-    setupBrowseSheet();
     renderGallery();
     galleryGrid?.addEventListener('click', event => {
       const card = event.target.closest('.gallery-card');
@@ -449,27 +307,8 @@
     setupSurprise();
   }
 
-  // Shared by "Surprise me" and the year-timeline thumbnails: both jump
-  // straight to a specific photo regardless of whatever tag filter is
-  // currently active, rather than being scoped by it. Clears the filter
-  // first so the target photo is guaranteed to be in filteredPhotos when
-  // openLightbox looks it up by index.
-  function jumpToPhoto(photo) {
-    const index = photos.indexOf(photo);
-    if (index === -1) return;
-    if (activeTag !== null) {
-      activeTag = null;
-      visibleCount = BATCH_SIZE;
-      syncBrowseTiles();
-      renderGallery();
-      updateBrowseTrigger();
-    }
-    openLightbox(index);
-  }
-
-  // Always picks from the full collection, not whatever's currently
-  // filtered — the point is rediscovering something you might not have
-  // scrolled to, so a narrow filter shouldn't narrow the surprise too.
+  // Always picks from the full collection — the point is rediscovering
+  // something you might not have scrolled to.
   function setupSurprise() {
     surpriseTrigger?.addEventListener('click', () => {
       if (!photos.length) return;
@@ -478,7 +317,7 @@
       lastSurpriseIndex = index;
       surpriseTrigger.classList.add('is-shuffling');
       window.setTimeout(() => surpriseTrigger.classList.remove('is-shuffling'), 340);
-      jumpToPhoto(photos[index]);
+      openLightbox(index);
     });
   }
 

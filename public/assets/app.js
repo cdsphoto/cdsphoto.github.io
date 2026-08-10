@@ -8,6 +8,7 @@
   const settings = DATA.settings || {};
   const HERO_INTERVAL = Math.max(3500, Number(settings.heroInterval) || 7000);
   const BATCH_SIZE = Math.max(12, Number(settings.galleryBatchSize) || 36);
+  const HERO_DRIFT_DIRECTIONS = [['-2.4%', '-1.5%'], ['2.4%', '1.5%'], ['2.2%', '-1.6%'], ['-2.2%', '1.6%']];
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const $ = (selector, context = document) => context.querySelector(selector);
   const $$ = (selector, context = document) => [...context.querySelectorAll(selector)];
@@ -20,7 +21,11 @@
   const browseTriggerLabel = $('.browse-trigger-label');
   const browseTriggerSub = $('.browse-trigger-sub');
   const browseSheet = $('#browse-sheet');
+  const browseSheetTitle = $('.browse-sheet-title');
+  const browseSheetTabs = $('.browse-sheet-tabs');
   const browseSheetGrid = $('.browse-sheet-grid');
+  const browseSheetTimeline = $('.browse-sheet-timeline');
+  const surpriseTrigger = $('.surprise-trigger');
   const galleryCount = $('.gallery-count');
   const galleryEmpty = $('.gallery-empty');
   const showMoreWrap = $('.show-more-wrap');
@@ -64,6 +69,7 @@
   let visibleCount = BATCH_SIZE;
   let filteredPhotos = [];
   let lightboxIndex = 0;
+  let lastSurpriseIndex = -1;
   let featuredPhotos = [];
   let heroIndex = 0;
   let activeFrame = 0;
@@ -255,6 +261,84 @@
     updateBrowseTrigger();
   }
 
+  // Only 14/68 photos in this collection currently carry a year, so a
+  // strict by-year timeline would be mostly one giant bucket. Grouping
+  // honestly rather than pretending false precision: known years descending,
+  // then a clearly-labeled "Undated" group last, kept in curated order
+  // (photos is already sorted by order — see photos.js) rather than
+  // shuffled, since there's no real chronology to sort it by.
+  function renderTimeline() {
+    if (!browseSheetTimeline) return;
+    const groups = new Map();
+    photos.forEach(photo => {
+      const key = photo.year || 'Undated';
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(photo);
+    });
+    const years = [...groups.keys()].filter(k => k !== 'Undated').sort((a, b) => b - a);
+    if (groups.has('Undated')) years.push('Undated');
+
+    browseSheetTimeline.replaceChildren();
+    years.forEach(year => {
+      const groupPhotos = groups.get(year);
+      const group = document.createElement('div');
+      group.className = 'timeline-year-group';
+
+      const heading = document.createElement('div');
+      heading.className = 'timeline-year-heading';
+      const yearEl = document.createElement('strong');
+      yearEl.textContent = String(year);
+      const countEl = document.createElement('span');
+      countEl.textContent = `${groupPhotos.length} photograph${groupPhotos.length === 1 ? '' : 's'}`;
+      heading.append(yearEl, countEl);
+
+      const strip = document.createElement('div');
+      strip.className = 'timeline-strip';
+      groupPhotos.forEach(photo => {
+        const thumb = document.createElement('button');
+        thumb.type = 'button';
+        thumb.className = 'timeline-thumb';
+        thumb.dataset.photoPath = photo.path;
+        thumb.setAttribute('aria-label', photo.title);
+        const img = document.createElement('img');
+        img.src = photo.previewSrc;
+        img.loading = 'lazy';
+        img.alt = '';
+        thumb.appendChild(img);
+        strip.appendChild(thumb);
+      });
+
+      group.append(heading, strip);
+      browseSheetTimeline.appendChild(group);
+    });
+
+    browseSheetTimeline.addEventListener('click', event => {
+      const thumb = event.target.closest('.timeline-thumb');
+      if (!thumb) return;
+      const photo = photos.find(p => p.path === thumb.dataset.photoPath);
+      if (!photo) return;
+      jumpToPhoto(photo);
+      closeBrowseSheet();
+    });
+  }
+
+  function setupBrowseSheetTabs() {
+    if (!browseSheetTabs) return;
+    browseSheetTabs.addEventListener('click', event => {
+      const tab = event.target.closest('.browse-sheet-tab');
+      if (!tab) return;
+      const view = tab.dataset.view;
+      $$('.browse-sheet-tab', browseSheetTabs).forEach(t => {
+        const active = t === tab;
+        t.classList.toggle('is-active', active);
+        t.setAttribute('aria-selected', String(active));
+      });
+      if (browseSheetGrid) browseSheetGrid.hidden = view !== 'category';
+      if (browseSheetTimeline) browseSheetTimeline.hidden = view !== 'timeline';
+      if (browseSheetTitle) browseSheetTitle.textContent = view === 'timeline' ? 'By year' : 'Categories';
+    });
+  }
+
   function syncBrowseTiles() {
     if (!browseSheetGrid) return;
     $$('.browse-tile', browseSheetGrid).forEach(tile => {
@@ -435,7 +519,9 @@
 
   function setupGallery() {
     renderBrowseSheet();
+    renderTimeline();
     setupBrowseSheet();
+    setupBrowseSheetTabs();
     renderGallery();
     galleryGrid?.addEventListener('click', event => {
       const card = event.target.closest('.gallery-card');
@@ -443,6 +529,40 @@
     });
     showMoreButton?.addEventListener('click', () => { visibleCount += BATCH_SIZE; renderGallery(); });
     setupCardTilt();
+    setupSurprise();
+  }
+
+  // Shared by "Surprise me" and the year-timeline thumbnails: both jump
+  // straight to a specific photo regardless of whatever tag filter is
+  // currently active, rather than being scoped by it. Clears the filter
+  // first so the target photo is guaranteed to be in filteredPhotos when
+  // openLightbox looks it up by index.
+  function jumpToPhoto(photo) {
+    const index = photos.indexOf(photo);
+    if (index === -1) return;
+    if (activeTag !== null) {
+      activeTag = null;
+      visibleCount = BATCH_SIZE;
+      syncBrowseTiles();
+      renderGallery();
+      updateBrowseTrigger();
+    }
+    openLightbox(index);
+  }
+
+  // Always picks from the full collection, not whatever's currently
+  // filtered — the point is rediscovering something you might not have
+  // scrolled to, so a narrow filter shouldn't narrow the surprise too.
+  function setupSurprise() {
+    surpriseTrigger?.addEventListener('click', () => {
+      if (!photos.length) return;
+      let index = Math.floor(Math.random() * photos.length);
+      if (photos.length > 1 && index === lastSurpriseIndex) index = (index + 1) % photos.length;
+      lastSurpriseIndex = index;
+      surpriseTrigger.classList.add('is-shuffling');
+      window.setTimeout(() => surpriseTrigger.classList.remove('is-shuffling'), 340);
+      jumpToPhoto(photos[index]);
+    });
   }
 
   const TILT_MAX_DEG = 6;
@@ -561,6 +681,11 @@
     const escaped = String(heroImage || photo.previewSrc).replace(/"/g, '%22');
     nextFrame.style.setProperty('--hero-image', `url("${escaped}")`);
     nextFrame.style.setProperty('--hero-drift-duration', `${HERO_INTERVAL + 1800}ms`);
+    // Cycle through 4 diagonal pan directions so consecutive slides in the
+    // featured rotation don't all drift the same way.
+    const [driftX, driftY] = HERO_DRIFT_DIRECTIONS[heroIndex % HERO_DRIFT_DIRECTIONS.length];
+    nextFrame.style.setProperty('--hero-drift-x', driftX);
+    nextFrame.style.setProperty('--hero-drift-y', driftY);
     heroMeta?.classList.add('is-changing');
     const finish = () => {
       previousFrame?.classList.remove('is-active');
@@ -1078,6 +1203,37 @@
     });
   }
 
-  setupTheme(); setupGrain(); setupHeader(); setupGallery(); setupHero(); setupLightbox(); setupShareDialog(); setupMobileTabs(); setupLocationMap(); setupNavProgress(); setupMisc();
+  // The stat numbers already render correct and visible from the server —
+  // this only ever layers a cosmetic count-up on top once .about-stats
+  // scrolls into view. If the observer never fires for any reason, the
+  // real numbers were never hidden or gated behind it in the first place.
+  function setupAboutStats() {
+    const statsRow = $('.about-stats');
+    const values = $$('.about-stat-value', statsRow || undefined);
+    if (!statsRow || !values.length || reducedMotion.matches) return;
+
+    let animated = false;
+    const observer = new IntersectionObserver(entries => {
+      if (animated || !entries.some(entry => entry.isIntersecting)) return;
+      animated = true;
+      observer.disconnect();
+      values.forEach(el => {
+        const target = Number(el.dataset.countTo) || 0;
+        const duration = 900;
+        const start = performance.now();
+        const step = now => {
+          const progress = Math.min(1, (now - start) / duration);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          el.textContent = String(Math.round(target * eased));
+          if (progress < 1) window.requestAnimationFrame(step);
+          else el.textContent = String(target); // guarantee the exact final value, no rounding drift
+        };
+        window.requestAnimationFrame(step);
+      });
+    }, { threshold: 0.4 });
+    observer.observe(statsRow);
+  }
+
+  setupTheme(); setupGrain(); setupHeader(); setupGallery(); setupHero(); setupLightbox(); setupShareDialog(); setupMobileTabs(); setupLocationMap(); setupNavProgress(); setupAboutStats(); setupMisc();
   openSharedPhotoFromUrl();
 })();

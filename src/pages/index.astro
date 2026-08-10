@@ -32,6 +32,11 @@ const jsonLd = {
 const jsonLdString = JSON.stringify(jsonLd).replace(/</g, '\\u003c');
 const analytics = site.analytics || {};
 const instagram = site.socialLinks?.find((link) => link.label === 'Instagram') || site.socialLinks?.[0];
+const aboutStats = [
+  { value: photos.length, label: photos.length === 1 ? 'Photograph' : 'Photographs' },
+  { value: new Set(photos.flatMap((p) => p.tags)).size, label: 'Categories' },
+  { value: new Set(photos.map((p) => p.location).filter(Boolean)).size, label: 'Locations' },
+];
 const galleryData = {
   photos,
   base,
@@ -142,13 +147,19 @@ const galleryJson = JSON.stringify(galleryData).replace(/</g, '\\u003c');
   <main>
     <section class="gallery-section" id="gallery" aria-labelledby="gallery-title">
       <div class="section-heading"><div><p class="eyebrow">Archive</p><h2 id="gallery-title">The collection</h2></div><p class="gallery-count" aria-live="polite"></p></div>
-      <button class="browse-trigger" type="button" aria-haspopup="dialog" aria-controls="browse-sheet">
-        <span class="browse-trigger-text">
-          <span class="browse-trigger-label">Browse by category</span>
-          <span class="browse-trigger-sub"></span>
-        </span>
-        <svg class="browse-trigger-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
-      </button>
+      <div class="gallery-actions">
+        <button class="browse-trigger" type="button" aria-haspopup="dialog" aria-controls="browse-sheet">
+          <span class="browse-trigger-text">
+            <span class="browse-trigger-label">Browse by category</span>
+            <span class="browse-trigger-sub"></span>
+          </span>
+          <svg class="browse-trigger-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+        </button>
+        <button class="surprise-trigger" type="button" aria-label="Open a random photograph">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h3.5c1.5 0 2 .5 3 2l5 8c1 1.5 1.5 2 3 2H21"></path><path d="M17 4l4 3-4 3"></path><path d="M3 17h3.5c1.5 0 2-.5 3-2l1.5-2.5"></path><path d="M17 20l4-3-4-3"></path></svg>
+          <span>Surprise me</span>
+        </button>
+      </div>
       <div class="gallery-grid" aria-live="polite"></div>
       <div class="gallery-empty" hidden><p>No photographs match these tags.</p></div>
       <div class="show-more-wrap" hidden><button class="show-more" type="button">Show more</button></div>
@@ -161,7 +172,17 @@ const galleryJson = JSON.stringify(galleryData).replace(/</g, '\\u003c');
 
     <section class="about-section" id="about" aria-labelledby="about-title">
       <div class="about-index" aria-hidden="true">01</div>
-      <div class="about-copy"><p class="eyebrow">About</p><h2 id="about-title">{site.aboutHeading}</h2>{String(site.aboutText || '').split(/\n\n+/).map((para) => <p>{para}</p>)}</div>
+      <div class="about-copy">
+        <p class="eyebrow">About</p><h2 id="about-title">{site.aboutHeading}</h2>{String(site.aboutText || '').split(/\n\n+/).map((para) => <p>{para}</p>)}
+        <div class="about-stats">
+          {aboutStats.map((stat) => (
+            <div class="about-stat">
+              <span class="about-stat-value" data-count-to={stat.value}>{stat.value}</span>
+              <span class="about-stat-label">{stat.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
       <div class="about-meta">
         {site.location && <div><span>Based in</span><strong>{site.location}</strong></div>}
         {site.specialties?.length && <div><span>Focus</span><div class="about-specialties">{site.specialties.map((s) => <span class="about-chip">{s}</span>)}</div></div>}
@@ -214,7 +235,12 @@ const galleryJson = JSON.stringify(galleryData).replace(/</g, '\\u003c');
         <p class="browse-sheet-title">Categories</p>
         <button class="icon-button browse-sheet-close" type="button" aria-label="Close category browser" data-browse-close><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
       </header>
+      <div class="browse-sheet-tabs" role="tablist" aria-label="Browse mode">
+        <button class="browse-sheet-tab is-active" type="button" data-view="category" role="tab" aria-selected="true">By category</button>
+        <button class="browse-sheet-tab" type="button" data-view="timeline" role="tab" aria-selected="false">By year</button>
+      </div>
       <div class="browse-sheet-grid" role="toolbar" aria-label="Filter photographs by tag"></div>
+      <div class="browse-sheet-timeline" role="toolbar" aria-label="Jump to a photograph by year" hidden></div>
     </div>
   </dialog>
 

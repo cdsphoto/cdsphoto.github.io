@@ -1115,6 +1115,13 @@ html[data-resolved-theme="dark"] .theme-icon-sun {
   background: var(--bg-soft);
 }
 
+/* Fakes a dark basemap from OSM's single light tile style. Scoped to just
+   the tile pane (not the whole map) so markers and popup photo thumbnails,
+   which live in separate Leaflet panes, keep their real colors. */
+.location-map.is-dark-tiles .leaflet-tile-pane {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
 /* Leaflet ships its own light-chrome UI; re-skin the pieces that show
    through to match the site's theme variables instead of looking like a
    pasted-in third-party widget. */

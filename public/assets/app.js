@@ -886,17 +886,22 @@
     if (!groups.size) { container.hidden = true; return; }
 
     const map = window.L.map(container, { scrollWheelZoom: false, attributionControl: true });
-    // CARTO's basemap tiles are free without an API key, same as the light
-    // set — a raster map can't just follow the page's CSS theme, and a
-    // CSS filter:invert() on the tile layer distorts hue (green land reads
-    // as magenta), so this swaps to CARTO's actual dark tile set instead.
-    const tileUrl = isDark => `https://{s}.basemaps.cartocdn.com/${isDark ? 'dark_all' : 'light_all'}/{z}/{x}/{y}{r}.png`;
-    const tileLayer = window.L.tileLayer(tileUrl(html.dataset.resolvedTheme === 'dark'), {
-      subdomains: 'abcd',
-      maxZoom: 18,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    // OpenStreetMap's own tile server — genuinely free with no API key for
+    // light use like this (CARTO's basemap CDN, used here previously,
+    // started requiring one and watermarks every tile without it). OSM only
+    // has one (light) style, so dark theme is faked with a CSS filter on
+    // just the tile layer: invert() flips lightness, and hue-rotate(180deg)
+    // corrects the hue shift invert alone introduces (e.g. green land
+    // reading as magenta) — markers and popups live in separate Leaflet
+    // panes, so they're untouched by a filter scoped to .leaflet-tile-pane.
+    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      subdomains: 'abc',
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
-    document.addEventListener('cds:theme-change', event => tileLayer.setUrl(tileUrl(event.detail.isDark)));
+    const applyMapTheme = isDark => container.classList.toggle('is-dark-tiles', isDark);
+    applyMapTheme(html.dataset.resolvedTheme === 'dark');
+    document.addEventListener('cds:theme-change', event => applyMapTheme(event.detail.isDark));
 
     const dotIcon = window.L.divIcon({
       className: 'map-marker-dot',
